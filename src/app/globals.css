@@ -1,0 +1,139 @@
+@import "tailwindcss";
+
+/*
+ * Nexfort Capital — "Fortaleza Financeira & Brutalismo Arquitetônico de Luxo".
+ * Concreto escuro monolítico, cortado por uma linha diagonal de LED (fachada da sede, Av. Das Artes 253).
+ */
+:root {
+  --background: #060913;
+  --foreground: #f8fafc;
+  /* Ângulo da linha de LED da fachada (a rampa desce ~32° da esquerda para a direita). */
+  --facade-angle: 32deg;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+
+  /* Paleta da marca */
+  --color-ink: #060913; /* fundo principal */
+  --color-concrete: #0d1322; /* superfícies de concreto */
+  --color-navy: #0f1738; /* torre: azul-marinho profundo */
+  --color-royal: #1e2d6b; /* torre: azul-real de destaque */
+  --color-royal-glow: #3b55c4; /* azul-real legível sobre o escuro (traços, brilhos) */
+  --color-gold: #f59e0b; /* touro: início do gradiente */
+  --color-ember: #ea580c; /* touro: âmbar intermediário */
+  --color-crimson: #b91c1c; /* touro: fim do gradiente */
+  --color-led: #f8fafc; /* branco LED arquitetônico */
+  --color-muted: #94a3b8; /* texto secundário */
+
+  /* Tipografia (variáveis definidas via next/font no layout) */
+  --font-display: var(--font-cinzel);
+  --font-sans: var(--font-jakarta);
+  --font-mono: var(--font-jetbrains);
+
+  /* Easing padrão do projeto (≈ power4.out) */
+  --ease-out-expo: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+html {
+  /* Compensa o header fixo (h-16 / lg:h-20) no foco por teclado, em âncoras nativas e no Lenis (anchors). */
+  scroll-padding-top: 5rem;
+  /* O Lenis aplica overflow: clip ao parar (menu mobile aberto): reservar a calha evita o salto lateral. */
+  scrollbar-gutter: stable;
+}
+
+@media (width >= 64rem) {
+  html {
+    scroll-padding-top: 6rem;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+}
+
+::selection {
+  background: rgb(245 158 11 / 0.35);
+  color: var(--color-led);
+}
+
+/* Gradiente "onda de calor" do touro. */
+@utility bg-bull-gradient {
+  background-image: linear-gradient(135deg, var(--color-gold) 0%, var(--color-ember) 55%, var(--color-crimson) 100%);
+}
+
+/* Gradiente dos botões: para no âmbar, garantindo contraste ≥ 5,5:1 com o texto ink (o carmesim cairia para 3:1). */
+@utility bg-cta-gradient {
+  background-image: linear-gradient(135deg, var(--color-gold) 0%, var(--color-ember) 100%);
+}
+
+@utility text-bull-gradient {
+  background-image: linear-gradient(135deg, var(--color-gold) 0%, var(--color-ember) 55%, var(--color-crimson) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+/* Fita de LED arquitetônica: linha de 1px com brilho. Aplique em um elemento com altura de 1px. */
+@utility led-line {
+  background-image: linear-gradient(90deg, transparent, var(--color-led) 18%, var(--color-led) 82%, transparent);
+  box-shadow:
+    0 0 6px rgb(248 250 252 / 0.55),
+    0 0 18px rgb(248 250 252 / 0.25);
+}
+
+/* Canto chanfrado (o "corte diagonal" da fachada). Ajuste o tamanho com --cut. */
+@utility clip-chamfer {
+  clip-path: polygon(0 0, calc(100% - var(--cut, 12px)) 0, 100% var(--cut, 12px), 100% 100%, 0 100%);
+}
+
+/* Textura de concreto (ruído estático, sem custo de animação). */
+@utility concrete-noise {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/*
+ * Entrada acima da dobra em CSS puro: começa no primeiro paint, sem esperar a hidratação do JS.
+ * Use com motion-safe: (movimento reduzido = estado final imediato) e defina o atraso em --nx-delay.
+ */
+@keyframes nx-rise {
+  from {
+    transform: translateY(100%);
+  }
+}
+
+@keyframes nx-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+}
+
+@utility animate-rise {
+  animation: nx-rise 0.9s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--nx-delay, 0s);
+}
+
+@utility animate-fade-up {
+  animation: nx-fade-up 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: var(--nx-delay, 0s);
+}
+
+/* Transições de rota (next-view-transitions) com o easing padrão do projeto. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.5s;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
