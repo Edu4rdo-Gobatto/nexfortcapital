@@ -13,7 +13,6 @@ import {
 } from "motion/react";
 import { Pause, Play } from "lucide-react";
 import { CornerTicks, LedFloor, RoyalHalo } from "@/components/motion/rook-bull/Ambient";
-import { BullLayer } from "@/components/motion/rook-bull/BullLayer";
 import {
   CHART_CYCLE_SECONDS,
   PARALLAX,
@@ -23,12 +22,13 @@ import {
 } from "@/components/motion/rook-bull/constants";
 import { MarketChart } from "@/components/motion/rook-bull/MarketChart";
 import { TelemetryCards } from "@/components/motion/rook-bull/TelemetryCards";
-import { TowerLayer } from "@/components/motion/rook-bull/TowerLayer";
+import { EMBLEM_SIZE, EMBLEM_SRC } from "@/components/brand/NexfortLogo";
+import { EASE_OUT_EXPO, SPRING_SMOOTH } from "@/lib/animations";
 import { usePrefersReducedMotion } from "@/lib/usePrefersReducedMotion";
 import { cn } from "@/lib/utils";
 
 const DESCRIPTION =
-  "Emblema da Nexfort Capital: uma torre de xadrez azul-marinho, símbolo de proteção e gestão, com um touro dourado, laranja e vermelho esculpido na base, símbolo da multiplicação do patrimônio.";
+  "Emblema da Nexfort Capital: uma torre de xadrez azul-marinho, símbolo de proteção e gestão, com o urso e o touro do mercado em dourado, laranja e vermelho no miolo, a logo original da empresa.";
 
 const PAUSE_LABEL = "Pausar animação do emblema";
 const RESUME_LABEL = "Retomar animação do emblema";
@@ -37,11 +37,11 @@ const RESUME_LABEL = "Retomar animação do emblema";
 const MAX_FRAME_STEP = 0.05;
 
 /**
- * O coração visual do site: a Torre (governança, proteção) com o Touro (multiplicação) esculpido na base.
- * 1. Entrada: as linhas da torre se desenham em ordem de construção e o azul-marinho acende.
- * 2. Ignição: 0.4s depois, uma onda de calor percorre o touro e micro candles de alta sobem pela coluna.
- * 3. Física do ponteiro: torre pesada (6px), touro enérgico (14px + leve rotação 3D), em camadas.
- * 4. Botão de pausa (WCAG 2.2.2): congela o laço contínuo (gráfico, partículas, flutuação dos cards).
+ * O coração visual do site: a Torre da logo original (imagem idêntica, public/brand/nexfort-torre.png).
+ * 1. Entrada: a Torre sobe e assenta com a mola padrão (opacidade + escala).
+ * 2. Ignição: ao assentar, os cards de telemetria acendem.
+ * 3. Física do ponteiro: a Torre acompanha o mouse de leve (paralaxe).
+ * 4. Botão de pausa (WCAG 2.2.2): congela o laço contínuo (gráfico e flutuação dos cards).
  */
 export function RookBullCenterpiece({ className }: { className?: string }) {
   const uid = useId().replace(/[^A-Za-z0-9_-]/g, "");
@@ -61,10 +61,6 @@ export function RookBullCenterpiece({ className }: { className?: string }) {
   const springY = useSpring(pointerY, POINTER_SPRING);
   const towerX = useTransform(springX, (value) => value * PARALLAX.tower);
   const towerY = useTransform(springY, (value) => value * PARALLAX.tower);
-  const bullX = useTransform(springX, (value) => value * PARALLAX.bull);
-  const bullY = useTransform(springY, (value) => value * PARALLAX.bull);
-  const bullRotateY = useTransform(springX, (value) => value * PARALLAX.tiltY);
-  const bullRotateX = useTransform(springY, (value) => value * -PARALLAX.tiltX);
 
   // Movimento reduzido ligado com a página aberta: as camadas voltam ao repouso na hora, sem mola.
   useEffect(() => {
@@ -75,16 +71,14 @@ export function RookBullCenterpiece({ className }: { className?: string }) {
     springY.jump(0);
   }, [reduce, pointerX, pointerY, springX, springY]);
 
-  // Laço único de quadros (gráfico, partículas, flutuação). Só roda na tela, sem movimento reduzido e sem pausa.
+  // Laço único de quadros (gráfico e flutuação). Só roda na tela, sem movimento reduzido e sem pausa.
   const chartProgress = useMotionValue(0);
-  const particleClock = useMotionValue(0);
   const floatClock = useMotionValue(0);
 
   const advance = useEffectEvent((deltaMs: number) => {
     const dt = Math.min(deltaMs / 1000, MAX_FRAME_STEP);
     chartProgress.set((chartProgress.get() + dt / CHART_CYCLE_SECONDS) % 1);
     if (!ignited) return;
-    particleClock.set(particleClock.get() + dt);
     floatClock.set(floatClock.get() + dt);
   });
 
@@ -145,19 +139,19 @@ export function RookBullCenterpiece({ className }: { className?: string }) {
                 className="absolute inset-0 motion-safe:pointer-fine:will-change-transform"
                 style={{ x: towerX, y: towerY }}
               >
-                <TowerLayer uid={uid} reduce={reduce} />
-              </motion.div>
-              {/* Camada própria também no toque: o laço das partículas repinta só aqui, sem refiltrar a torre. */}
-              <motion.div
-                className="absolute inset-0 origin-[50%_70%] motion-safe:will-change-transform"
-                style={{ x: bullX, y: bullY, rotateX: bullRotateX, rotateY: bullRotateY }}
-              >
-                <BullLayer
-                  uid={uid}
-                  reduce={reduce}
-                  ignited={ignited}
-                  clock={particleClock}
-                  onIgnite={() => setIgnited(true)}
+                {/* A Torre da logo original, idêntica. Entra com a mola padrão e, ao assentar, acende os cards. */}
+                <motion.img
+                  src={EMBLEM_SRC}
+                  width={EMBLEM_SIZE.width}
+                  height={EMBLEM_SIZE.height}
+                  alt=""
+                  decoding="async"
+                  className="size-full object-contain object-bottom"
+                  variants={{ hidden: { opacity: 0, scale: 0.92, y: 16 }, drawn: { opacity: 1, scale: 1, y: 0 } }}
+                  transition={{ ...SPRING_SMOOTH, opacity: { duration: 0.6, ease: EASE_OUT_EXPO } }}
+                  onAnimationComplete={(definition) => {
+                    if (definition === "drawn") setIgnited(true);
+                  }}
                 />
               </motion.div>
             </div>

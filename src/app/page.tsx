@@ -1,3 +1,4 @@
+import { BrandPrologue } from "@/components/brand/BrandPrologue";
 import { Navbar } from "@/components/layout/Navbar";
 import { HeadquartersSection, SiteFooter } from "@/components/sections/HeadquartersFooter";
 import { HeroSection } from "@/components/sections/HeroSection";
@@ -15,6 +16,8 @@ export default function Home() {
     <>
       <JsonLd />
       <Navbar />
+      {/* Abertura decorativa fora do <main>: o "Pular para o conteúdo" da navbar salta direto para a Hero. */}
+      <BrandPrologue />
       <main id="conteudo" tabIndex={-1} className="focus:outline-none">
         <HeroSection />
         <TowerAndBullStory />

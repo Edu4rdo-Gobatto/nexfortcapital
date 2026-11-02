@@ -52,8 +52,10 @@ function Figures({ text }: { text: string }) {
 
 export function HeroSection() {
   return (
+    // data-awaits-prologue: com a abertura em rolagem acima, as entradas em CSS esperam ela terminar (globals.css).
     <section
       id={SECTION_IDS.hero}
+      data-awaits-prologue=""
       aria-labelledby={HEADING_ID}
       className="relative isolate flex min-h-svh items-center overflow-x-clip pt-28 pb-16 sm:pt-32 sm:pb-24"
     >

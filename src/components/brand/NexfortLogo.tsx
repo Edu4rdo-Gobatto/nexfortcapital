@@ -1,54 +1,28 @@
-import { useId } from "react";
-import { BULL_PATH, EMBLEM_VIEWBOX, ROOK_GROOVE_PATH, ROOK_PATH } from "@/components/brand/geometry";
 import { cn } from "@/lib/utils";
+
+/** A Torre da logo original, reconstruída em alta resolução por design/motion/extract_logo.py (774×1458). */
+export const EMBLEM_SRC = "/brand/nexfort-torre.png";
+export const EMBLEM_SIZE = { width: 774, height: 1458 } as const;
 
 type NexfortEmblemProps = {
   className?: string;
   /** Nome acessível. Sem título, o emblema é tratado como decorativo. */
   title?: string;
-  /** Contorno LED sutil — melhora a leitura sobre fundos escuros. */
-  outline?: boolean;
 };
 
-/** Emblema estático: Torre de xadrez com o Touro esculpido em espaço negativo. */
-export function NexfortEmblem({ className, title, outline = true }: NexfortEmblemProps) {
-  const uid = useId().replace(/[^a-zA-Z0-9_-]/g, "");
-  const rookFill = `${uid}-rook`;
-  const bullFill = `${uid}-bull`;
-  const rookClip = `${uid}-clip`;
-
+/** Emblema estático: a Torre da logo original, idêntica (com o touro e o urso no miolo). */
+export function NexfortEmblem({ className, title }: NexfortEmblemProps) {
   return (
-    <svg
-      viewBox={EMBLEM_VIEWBOX}
-      className={className}
-      role={title ? "img" : undefined}
+    // eslint-disable-next-line @next/next/no-img-element -- PNG pequeno e já no tamanho final; next/image não ganha nada aqui.
+    <img
+      src={EMBLEM_SRC}
+      width={EMBLEM_SIZE.width}
+      height={EMBLEM_SIZE.height}
+      alt={title ?? ""}
       aria-hidden={title ? undefined : true}
-      focusable="false"
-    >
-      {title ? <title>{title}</title> : null}
-      <defs>
-        <linearGradient id={rookFill} x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stopColor="#2B3E94" />
-          <stop offset="1" stopColor="#121A45" />
-        </linearGradient>
-        <linearGradient id={bullFill} gradientUnits="userSpaceOnUse" x1="80" y1="131" x2="80" y2="203">
-          <stop offset="0" stopColor="#F59E0B" />
-          <stop offset="0.55" stopColor="#EA580C" />
-          <stop offset="1" stopColor="#B91C1C" />
-        </linearGradient>
-        <clipPath id={rookClip}>
-          <path d={ROOK_PATH} />
-        </clipPath>
-      </defs>
-      <path d={ROOK_PATH} fill={`url(#${rookFill})`} />
-      <path d={BULL_PATH} fill={`url(#${bullFill})`} clipPath={`url(#${rookClip})`} />
-      {outline ? (
-        <>
-          <path d={ROOK_PATH} fill="none" stroke="#F8FAFC" strokeOpacity={0.32} strokeWidth={1.2} />
-          <path d={ROOK_GROOVE_PATH} stroke="#F8FAFC" strokeOpacity={0.22} strokeWidth={0.8} />
-        </>
-      ) : null}
-    </svg>
+      decoding="async"
+      className={cn("object-contain", className)}
+    />
   );
 }
 

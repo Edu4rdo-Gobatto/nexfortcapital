@@ -1,8 +1,18 @@
 import { useId } from "react";
-import { BULL_PATH, ROOK_GROOVE_PATH, ROOK_PATH } from "@/components/brand/geometry";
+import { EMBLEM_HEIGHT, EMBLEM_WIDTH } from "@/components/brand/geometry";
+import { EMBLEM_SRC } from "@/components/brand/NexfortLogo";
 import { BRAND, CONTACT } from "@/content/nexfort";
 import { cn } from "@/lib/utils";
 import { FacadeStage, LedLine, LightFade } from "./FacadeMotion";
+
+/** A logo original ocupa a mesma caixa do emblema (viewBox 160×240 do EMBLEM_TRANSFORM), apoiada na base. */
+const EMBLEM_IMAGE = {
+  x: 0,
+  y: 0,
+  width: EMBLEM_WIDTH,
+  height: EMBLEM_HEIGHT,
+  preserveAspectRatio: "xMidYMax meet",
+} as const;
 import {
   BUILDING,
   BUILDING_NUMBER,
@@ -162,18 +172,6 @@ export function FacadeIllustration({ className }: FacadeIllustrationProps) {
             <stop offset="0" stopColor="#000000" stopOpacity="0.5" />
             <stop offset="1" stopColor="#000000" stopOpacity="0" />
           </linearGradient>
-          <linearGradient id={defId("rook")} x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0" stopColor="#3550BE" />
-            <stop offset="1" stopColor="#152059" />
-          </linearGradient>
-          <linearGradient id={defId("bull")} gradientUnits="userSpaceOnUse" x1="80" y1="131" x2="80" y2="203">
-            <stop offset="0" stopColor="#F59E0B" />
-            <stop offset="0.55" stopColor="#EA580C" />
-            <stop offset="1" stopColor="#B91C1C" />
-          </linearGradient>
-          <clipPath id={defId("rookClip")}>
-            <path d={ROOK_PATH} />
-          </clipPath>
           <radialGradient id={defId("signWash")}>
             <stop offset="0" stopColor="#F8FAFC" stopOpacity="0.12" />
             <stop offset="1" stopColor="#F8FAFC" stopOpacity="0" />
@@ -334,17 +332,15 @@ export function FacadeIllustration({ className }: FacadeIllustrationProps) {
         <LightFade delay={1.35} duration={1.6}>
           <ellipse cx={SIGN.cx} cy={SIGN.emblemTop + 140} rx="300" ry="200" fill={paint("signWash")} />
           <g transform={EMBLEM_TRANSFORM}>
-            <path d={ROOK_PATH} fill="#FFF1DA" fillOpacity="0.4" filter={paint("haloBlur")} />
+            <image href={EMBLEM_SRC} {...EMBLEM_IMAGE} opacity="0.4" filter={paint("haloBlur")} />
           </g>
           <text {...WORDMARK_TEXT} fill="#FFF4E0" fillOpacity="0.5" filter={paint("textGlow")}>
             {wordmark}
           </text>
         </LightFade>
         <g transform={EMBLEM_TRANSFORM}>
-          <path d={ROOK_PATH} fill={paint("rook")} />
-          <path d={BULL_PATH} fill={paint("bull")} clipPath={paint("rookClip")} />
-          <path d={ROOK_PATH} fill="none" stroke="#F8FAFC" strokeOpacity="0.55" strokeWidth="1.4" />
-          <path d={ROOK_GROOVE_PATH} stroke="#F8FAFC" strokeOpacity="0.35" strokeWidth="1" />
+          {/* A logo original, idêntica, no lugar do emblema vetorial. */}
+          <image href={EMBLEM_SRC} {...EMBLEM_IMAGE} />
         </g>
         <text {...WORDMARK_TEXT} fill="#F8FAFC">
           {wordmark}

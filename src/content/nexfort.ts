@@ -79,6 +79,12 @@ export const SECTION_IDS = {
   headquarters: "sede",
 } as const;
 
+/** Abertura em rolagem (BrandPrologue): o touro e o urso colidem e formam a Torre. */
+export const PROLOGUE = {
+  cue: "Role para começar",
+  skip: "Pular abertura",
+} as const;
+
 export const HERO = {
   badge: "CONSULTORIA FINANCEIRA EM SINOP • MT",
   headline: BRAND.slogan,

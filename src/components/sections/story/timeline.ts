@@ -21,7 +21,6 @@ const BULL_CENTER = {
   x: BULL_BOUNDS.x + BULL_BOUNDS.width / 2,
   y: BULL_BOUNDS.y + BULL_BOUNDS.height / 2,
 };
-const BULL_SVG_ORIGIN = `${BULL_CENTER.x} ${BULL_CENTER.y}`;
 const BULL_BOX_ORIGIN = `${(BULL_CENTER.x / EMBLEM_WIDTH) * 100}% ${(BULL_CENTER.y / EMBLEM_HEIGHT) * 100}%`;
 
 type StoryScrollTrigger = gsap.TimelineVars["scrollTrigger"];
@@ -40,9 +39,9 @@ export function clearStoryStyles(stage: HTMLElement) {
 
 /**
  * Linha do tempo da narrativa Torre → Touro (10 unidades, todas lineares: o scroll é a curva).
- *   0 – 3    A Torre sobe da fundação: fiadas de LED, contorno real, massa e brilho azul.
+ *   0 – 3    A Torre da logo original sobe e acende o brilho azul.
  *   3 – 6.6  O corte de LED a 32° varre o palco do canto superior direito ao inferior esquerdo; o texto troca.
- *   4 – 8.6  O Touro acende dentro da torre e ganha presença; a paleta passa do azul ao âmbar.
+ *   4 – 8.6  O miolo da logo (urso e touro) acende dentro da torre; a paleta passa do azul ao âmbar.
  *   8.6 – 10 Pausa para leitura antes de soltar o pin.
  * Só anima transform e opacity. Seletores sempre restritos ao palco.
  */
@@ -56,16 +55,7 @@ export function buildStoryTimeline(stage: HTMLElement, scrollTrigger?: StoryScro
   // Indicador de progresso: acompanha a história inteira.
   tl.fromTo(q('[data-story="rail-fill"]'), { scaleY: 0 }, { scaleY: 1, duration: 10 }, 0);
 
-  // 1. A Torre: construída de baixo para cima.
-  // As origens vão no "from": definidas só no "to", o SVG já teria sido desenhado com a origem padrão
-  // e o smoothOrigin do GSAP deixaria um deslocamento permanente.
-  tl.fromTo(
-    q('[data-story="course"]'),
-    { scaleX: 0, transformOrigin: "50% 50%" },
-    { scaleX: 1, duration: 0.8, stagger: 0.28 },
-    0,
-  );
-  tl.fromTo(q('[data-story="outline-part"]'), { opacity: 0 }, { opacity: 1, duration: 0.9, stagger: 0.5 }, 0.3);
+  // 1. A Torre: sobe e acende.
   tl.fromTo(q('[data-story="rook-mass"]'), { opacity: 0, y: 28 }, { opacity: 1, y: 0, duration: 1.5 }, 0.8);
   tl.fromTo(q('[data-story="halo-tower"]'), { opacity: 0, scale: 0.8 }, { opacity: 1, scale: 1, duration: 1.6 }, 1.2);
 
@@ -82,14 +72,12 @@ export function buildStoryTimeline(stage: HTMLElement, scrollTrigger?: StoryScro
   tl.fromTo(q('[data-story="rail-bull"]'), { opacity: 0.45 }, { opacity: 1, duration: 0.5 }, 4.9);
   tl.fromTo(q('[data-story="rail-bull-dot"]'), { opacity: 0 }, { opacity: 1, duration: 0.5 }, 4.9);
 
-  // 3. O Touro: a paleta esquenta e o touro acende dentro da torre.
+  // 3. O miolo: a paleta esquenta e o urso e o touro acendem dentro da torre.
+  // As origens vão no "from": definidas só no "to", o smoothOrigin do GSAP deixaria um deslocamento permanente.
   tl.to(q('[data-story="halo-tower"]'), { opacity: 0, duration: 1.4 }, 4.2);
   tl.fromTo(q('[data-story="halo-bull"]'), { opacity: 0, scale: 0.7 }, { opacity: 1, scale: 1, duration: 2.4 }, 4);
-  tl.to(q('[data-story="rook-outline"]'), { opacity: 0, duration: 1.2 }, 4.6);
-  tl.fromTo(q('[data-story="rook-outline-warm"]'), { opacity: 0 }, { opacity: 1, duration: 1.2 }, 4.6);
   tl.fromTo(q('[data-story="bull"]'), { opacity: 0 }, { opacity: 1, duration: 1.4 }, 4.2);
-  tl.fromTo(q('[data-story="bull-body"]'), { scale: 0.84, svgOrigin: BULL_SVG_ORIGIN }, { scale: 1, duration: 2.8 }, 4.2);
-  tl.fromTo(q('[data-story="bull-heat"]'), { y: 140 }, { y: 0, duration: 2.4 }, 5.4);
+  tl.fromTo(q('[data-story="bull-body"]'), { scale: 0.84, transformOrigin: BULL_BOX_ORIGIN }, { scale: 1, duration: 2.8 }, 4.2);
   tl.fromTo(
     q('[data-story="bull-bloom"]'),
     { opacity: 0, scale: 0.86, transformOrigin: BULL_BOX_ORIGIN },

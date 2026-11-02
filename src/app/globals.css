@@ -128,6 +128,39 @@ body {
   animation-delay: var(--nx-delay, 0s);
 }
 
+/* Indicador da abertura: uma luz desce pelo trilho, convidando a rolar. */
+@keyframes nx-scroll-cue {
+  from {
+    transform: translateY(-100%);
+  }
+  to {
+    transform: translateY(100%);
+  }
+}
+
+@utility animate-scroll-cue {
+  /* Três ciclos e para (WCAG 2.2.2): o convite já foi feito. */
+  animation: nx-scroll-cue 1.8s cubic-bezier(0.22, 1, 0.36, 1) 3 both;
+}
+
+/*
+ * Abertura em rolagem (BrandPrologue). Sem JavaScript ela não anda: some, e a página começa na Hero.
+ * Com JavaScript, enquanto ela não termina (data-prologue="armed"), as entradas em CSS da Hero esperam;
+ * senão rodariam no carregamento, fora da tela, e a Hero chegaria parada.
+ */
+@media (scripting: none) {
+  [data-prologue] {
+    display: none;
+  }
+}
+
+/* Só na tela: na impressão, uma entrada pausada deixaria a Hero invisível no papel. */
+@media screen and (scripting: enabled) and (prefers-reduced-motion: no-preference) {
+  :root:has([data-prologue="armed"]) [data-awaits-prologue] [class*="animate-"] {
+    animation-play-state: paused;
+  }
+}
+
 /* Transições de rota (next-view-transitions) com o easing padrão do projeto. */
 ::view-transition-old(root),
 ::view-transition-new(root) {
