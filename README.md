@@ -8,7 +8,7 @@ Conceito visual: *Fortaleza Financeira & Brutalismo Arquitetônico de Luxo*. Ele
 - **Next.js 16.4** (App Router, Turbopack, `cacheComponents`) + **React 19.3** + TypeScript estrito
 - **Tailwind CSS 4.3** (tokens CSS-first em `src/app/globals.css`)
 - **Motion 14** (`motion/react`): micro-interações, molas, `layoutId`, contadores
-- **GSAP 3.15 + ScrollTrigger** (`@gsap/react`): pin e scrub do storytelling, marquee do ticker, parallax
+- **GSAP 3.15 + ScrollTrigger** (`@gsap/react`): pin e scrub do storytelling, parallax
 - **Lenis 1.3** (`lenis/react`): scroll com inércia, dirigido pelo `gsap.ticker` e sincronizado ao ScrollTrigger
 - **next-view-transitions**: transições nativas de rota
 
@@ -45,11 +45,11 @@ src/
   lib/               animations.ts, finance.ts, utils.ts (cn)
   components/
     providers/       MotionProvider (reduced motion global), SmoothScrollProvider (Lenis + GSAP)
-    motion/          Magnetic, TextReveal, ParallaxBox, Reveal, RookBullCenterpiece (+ rook-bull/)
+    motion/          TextReveal, ParallaxBox, Reveal, RookBullCenterpiece (+ rook-bull/)
     brand/           NexfortLogo / NexfortEmblem + geometry.ts
-    ui/              CtaLink (botão chanfrado), LedDivider, BrandIcons (WhatsApp, Instagram, Google)
+    ui/              CtaLink (botão chanfrado), LedDivider, BrandIcons (WhatsApp, Instagram)
     layout/          Navbar (+ menu mobile, scrollspy)
-    sections/        Hero, MarketTicker, TowerAndBullStory, PillarsBentoGrid,
+    sections/        Hero, TowerAndBullStory, PillarsBentoGrid,
                      WealthSimulator, ProgramsAndFounders, HeadquartersFooter
     seo/             JsonLd
 ```
@@ -61,13 +61,12 @@ src/
 - **Missão**: a frase em `BRAND.mission` é atribuída à empresa, não aos sócios. Valide o texto.
 - **Fotos dos sócios**: hoje os sócios aparecem com monogramas. Se houver fotos, podem substituí-los.
 - **Domínio**: defina a variável de ambiente `NEXT_PUBLIC_SITE_URL` (ex.: `https://www.seudominio.com.br`) para que a imagem de compartilhamento (`src/app/opengraph-image.jpg`, 62 KB, prévia de link no WhatsApp e redes) seja servida com URL absoluta. Na Vercel isso é automático.
-- **Avaliações no Google**: se houver o link das avaliações, o selo "5,0 no Google" pode virar um link.
 
 ## Acessibilidade e performance
 
 - `prefers-reduced-motion` é respeitado em todas as camadas: Motion (global), GSAP (`gsap.matchMedia`), Lenis (`respectReducedMotion`) e CSS (`motion-safe:`).
-- O conteúdo animado tem texto acessível (`sr-only`). O ticker tem botão de pausa (WCAG 2.2.2) e o menu mobile prende o foco.
-- As animações usam apenas `transform`/`opacity` (e `pathLength` para desenho de linhas). Laços infinitos pausam fora da tela.
+- O conteúdo animado tem texto acessível (`sr-only`). O emblema do hero tem botão de pausa (WCAG 2.2.2) e o menu mobile prende o foco.
+- As animações usam apenas `transform`/`opacity` (e `pathLength` para desenho de linhas); a exceção são as transições de cor (200 ms, `ease-out-expo`) no hover dos links de texto (navegação, rodapé, endereço, telefone, Instagram) e das abas dos programas. Laços infinitos pausam fora da tela.
 
 ## Observação sobre OneDrive
 

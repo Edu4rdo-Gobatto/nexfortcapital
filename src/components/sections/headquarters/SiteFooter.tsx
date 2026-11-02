@@ -25,7 +25,13 @@ export function SiteFooter() {
             <ul className="mt-5 space-y-3">
               {NAV_LINKS.map((link) => (
                 <li key={link.href}>
-                  <a href={link.href} className={cn("text-sm text-muted hover:text-led", FOCUS_RING)}>
+                  <a
+                    href={link.href}
+                    className={cn(
+                      "text-sm text-muted transition-[color] duration-200 ease-out-expo hover:text-led",
+                      FOCUS_RING,
+                    )}
+                  >
                     {link.label}
                   </a>
                 </li>
@@ -39,7 +45,10 @@ export function SiteFooter() {
               href={CONTACT.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className={cn("mt-5 inline-flex items-center gap-2.5 text-sm text-muted hover:text-led", FOCUS_RING)}
+              className={cn(
+                "mt-5 inline-flex items-center gap-2.5 text-sm text-muted transition-[color] duration-200 ease-out-expo hover:text-led",
+                FOCUS_RING,
+              )}
             >
               <InstagramIcon className="size-5 shrink-0" />
               {CONTACT.instagramHandle}
@@ -55,10 +64,13 @@ export function SiteFooter() {
           </div>
           <a
             href={`#${SECTION_IDS.hero}`}
-            className={cn("group inline-flex shrink-0 items-center gap-3 self-start text-sm text-muted hover:text-led sm:self-auto", FOCUS_RING)}
+            className={cn(
+              "inline-flex shrink-0 items-center gap-3 self-start text-sm text-muted transition-[color] duration-200 ease-out-expo hover:text-led sm:self-auto",
+              FOCUS_RING,
+            )}
           >
             <span aria-hidden="true" className="grid size-9 place-items-center border border-white/12 bg-concrete">
-              <ArrowUp className="size-4 transition-transform duration-300 ease-out-expo group-hover:-translate-y-0.5 motion-reduce:transition-none" />
+              <ArrowUp className="size-4" />
             </span>
             Voltar ao topo
           </a>

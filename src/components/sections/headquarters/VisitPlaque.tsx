@@ -1,5 +1,4 @@
-import { Clock, MapPin, Navigation, Phone, Star } from "lucide-react";
-import { GoogleIcon } from "@/components/ui/BrandIcons";
+import { Clock, MapPin, Navigation, Phone } from "lucide-react";
 import { CtaLink } from "@/components/ui/CtaLink";
 import { CONTACT } from "@/content/nexfort";
 import { cn } from "@/lib/utils";
@@ -11,40 +10,11 @@ const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-offset-4 focus
 /** Chanfro a 32° (44px × 27,5px, tan 32° ≈ 0,625): o mesmo corte da fita de LED da fachada. */
 const PLAQUE_CLIP = "polygon(0 0, calc(100% - 44px) 0, 100% 27.5px, 100% 100%, 0 100%)";
 
-const STARS = [1, 2, 3, 4, 5] as const;
-
-/** Selo "5,0 ★★★★★ no Google": lido como uma única imagem pelo leitor de tela. */
-function GoogleRatingSeal() {
-  return (
-    <div
-      role="img"
-      aria-label={`Avaliação ${CONTACT.googleRating} de 5 no Google`}
-      className="flex items-center gap-4"
-    >
-      <span className="grid size-11 shrink-0 place-items-center bg-led">
-        <GoogleIcon className="size-6" />
-      </span>
-      {/* Na mono, a vírgula ocupa uma célula inteira: o tracking negativo aproxima "5,0". */}
-      <span className="font-mono text-4xl leading-none font-medium tracking-[-0.12em] tabular-nums text-led">
-        {CONTACT.googleRating}
-      </span>
-      <span className="flex flex-col gap-1.5">
-        <span className="flex gap-0.5 text-gold">
-          {STARS.map((star) => (
-            <Star key={star} className="size-4 fill-current" strokeWidth={1.5} />
-          ))}
-        </span>
-        <span className="text-sm leading-none text-muted">no Google</span>
-      </span>
-    </div>
-  );
-}
-
 type VisitPlaqueProps = {
   className?: string;
 };
 
-/** Placa de visita: avaliação, endereço com rota, horário de atendimento e telefone. */
+/** Placa de visita: endereço com rota, horário de atendimento e telefone. */
 export function VisitPlaque({ className }: VisitPlaqueProps) {
   return (
     <div className={cn("relative isolate", className)}>
@@ -69,12 +39,8 @@ export function VisitPlaque({ className }: VisitPlaqueProps) {
         <span className="absolute inset-x-0 -top-px h-0.75 bg-[#FFE7C2]/70 blur-[3px]" />
       </span>
 
-      <div className="border-b border-white/8 px-5 pt-7 pb-6 sm:px-8">
-        <GoogleRatingSeal />
-      </div>
-
       <dl className="grid sm:grid-cols-2 lg:grid-cols-1">
-        <div className="border-b border-white/8 px-5 py-6 sm:col-span-2 sm:px-8 lg:col-span-1">
+        <div className="border-b border-white/8 px-5 pt-7 pb-6 sm:col-span-2 sm:px-8 lg:col-span-1">
           <dt className="flex items-center gap-2 text-sm text-muted">
             <MapPin className="size-4 text-royal-glow" />
             Endereço
@@ -115,7 +81,7 @@ export function VisitPlaque({ className }: VisitPlaqueProps) {
             <a
               href={CONTACT.phoneHref}
               className={cn(
-                "inline-flex items-center font-mono text-xl tabular-nums text-led hover:text-gold sm:text-2xl",
+                "inline-flex items-center font-mono text-xl tabular-nums text-led transition-[color] duration-200 ease-out-expo hover:text-gold sm:text-2xl",
                 FOCUS_RING,
               )}
             >

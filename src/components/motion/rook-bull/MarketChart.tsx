@@ -1,8 +1,8 @@
 "use client";
 
 import { motion, useTransform, type MotionValue } from "motion/react";
-import { CHART_CANDLES, CHART_HEIGHT, CHART_LINE, CHART_PERIOD, TIMELINE, type VisualMode } from "./constants";
-import { MODE_FADE, fadeIn, stepFor } from "./presets";
+import { CHART_CANDLES, CHART_HEIGHT, CHART_LINE, CHART_PERIOD, TIMELINE } from "./constants";
+import { fadeIn, stepFor } from "./presets";
 
 /** Esmaece as bordas da faixa (máscara estática, sem custo de animação). */
 const CHART_MASK = "radial-gradient(closest-side, #000 52%, transparent)";
@@ -37,14 +37,12 @@ type MarketChartProps = {
   uid: string;
   /** Progresso do laço (0–1): 1 ciclo = metade da faixa, que tem duas cópias idênticas. */
   progress: MotionValue<number>;
-  mode: VisualMode;
   reduce: boolean | null;
 };
 
 /** Gráfico de mercado tênue atrás do emblema, rolando na horizontal em laço contínuo (só transform). */
-export function MarketChart({ uid, progress, mode, reduce }: MarketChartProps) {
+export function MarketChart({ uid, progress, reduce }: MarketChartProps) {
   const x = useTransform(progress, (value) => `${value * -50}%`);
-  const bullMode = mode === "bull";
   const candlesId = `${uid}-chart-candles`;
 
   return (
@@ -71,27 +69,14 @@ export function MarketChart({ uid, progress, mode, reduce }: MarketChartProps) {
             </g>
           </g>
           <use href={`#${candlesId}`} x={CHART_PERIOD} />
-          <motion.path
+          <path
             d={CHART_LINE}
             fill="none"
             stroke="#3B55C4"
             strokeWidth="1.25"
             strokeLinejoin="round"
             vectorEffect="non-scaling-stroke"
-            initial={{ opacity: 0.9 }}
-            animate={{ opacity: bullMode ? 0 : 0.9 }}
-            transition={MODE_FADE}
-          />
-          <motion.path
-            d={CHART_LINE}
-            fill="none"
-            stroke="#F59E0B"
-            strokeWidth="1.25"
-            strokeLinejoin="round"
-            vectorEffect="non-scaling-stroke"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: bullMode ? 0.95 : 0 }}
-            transition={MODE_FADE}
+            opacity="0.9"
           />
         </svg>
       </motion.div>

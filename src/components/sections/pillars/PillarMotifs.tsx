@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
  * a coroa da Torre (empresas: estrutura e governança), o escudo equilibrado (família: orçamento e reservas)
  * e o Touro (investimentos: multiplicação). Azul = estrutura; gradiente de calor = multiplicação.
  * Traços com vector-effect non-scaling-stroke: o filete continua fino em qualquer escala.
- * Decorativos (aria-hidden). Reagem ao hover do TiltCard via `group-hover/tilt` (só opacity/translate).
+ * Decorativos (aria-hidden) e estáticos.
  */
 
 const LED = "#F8FAFC";
@@ -33,7 +33,7 @@ const LEDGER_ROWS = [
 
 /**
  * Finanças Empresariais: elevação da coroa da Torre (cota, eixo de simetria, linhas de DRE),
- * emergindo do concreto. O friso de LED sob o colar acende com o hover.
+ * emergindo do concreto.
  * Preenche a caixa recebida (preserveAspectRatio xMinYMin meet).
  */
 export function RookCrownMotif({ className }: MotifProps) {
@@ -77,11 +77,8 @@ export function RookCrownMotif({ className }: MotifProps) {
           </g>
         ))}
       </g>
-      {/* Friso de luz sob o colar: acende com o hover do card. */}
-      <g
-        stroke={LED}
-        className="opacity-40 transition-opacity duration-500 ease-out-expo group-hover/tilt:opacity-100 motion-reduce:transition-none"
-      >
+      {/* Friso de luz sob o colar. */}
+      <g stroke={LED} className="opacity-40">
         <path d={ROOK_GROOVE_PATH} {...HAIRLINE} strokeWidth={5} strokeOpacity={0.18} />
         <path d={ROOK_GROOVE_PATH} {...HAIRLINE} strokeWidth={1.25} />
       </g>
@@ -112,8 +109,8 @@ export function BalanceShieldMotif({ className }: MotifProps) {
         <path d="M30 76H66" {...HAIRLINE} strokeOpacity={0.32} />
         <path d="M36 88H60" {...HAIRLINE} strokeOpacity={0.18} />
       </g>
-      {/* Equilíbrio: acende com o hover do card. */}
-      <g className="opacity-60 transition-opacity duration-500 ease-out-expo group-hover/tilt:opacity-100 motion-reduce:transition-none">
+      {/* Travessão do equilíbrio. */}
+      <g className="opacity-60">
         <path d={BEAM_PATH} {...HAIRLINE} stroke={LED} strokeWidth={5} strokeOpacity={0.16} />
         <path d={BEAM_PATH} {...HAIRLINE} stroke={LED} strokeWidth={1.25} />
         <path d="M48 44L44 51H52Z" fill={LED} />
@@ -122,51 +119,35 @@ export function BalanceShieldMotif({ className }: MotifProps) {
   );
 }
 
-/** Mesmo recorte para as duas camadas do motivo do Touro. */
+/** Recorte do motivo: o touro e a linha de LED sob ele. */
 const BULL_VIEWBOX = "22 126 116 80";
 
 /**
  * Investimentos & Bolsa: o Touro do emblema em traço de calor (dourado na cabeça, carmesim na traseira),
- * sobre uma linha de LED dourada. No hover, avança e esquenta.
+ * sobre uma linha de LED dourada.
  */
 export function BullMotif({ className }: MotifProps) {
   const [heat, trail] = useSvgIds("heat", "trail");
 
   return (
-    <div aria-hidden="true" className={cn("relative aspect-[116/80]", className)}>
-      <svg viewBox={BULL_VIEWBOX} className="absolute inset-0 size-full" focusable="false">
-        <defs>
-          <linearGradient id={trail} gradientUnits="userSpaceOnUse" x1="22" y1="0" x2="138" y2="0">
-            <stop offset="0" stopColor="#F59E0B" stopOpacity="0" />
-            <stop offset="0.55" stopColor="#F59E0B" stopOpacity="0.6" />
-            <stop offset="1" stopColor="#F59E0B" />
-          </linearGradient>
-        </defs>
-        <path d="M22 203H138" {...HAIRLINE} stroke={`url(#${trail})`} strokeWidth={5} strokeOpacity={0.22} />
-        <path d="M22 203H138" {...HAIRLINE} stroke={`url(#${trail})`} strokeWidth={1} />
-      </svg>
-      <svg
-        viewBox={BULL_VIEWBOX}
-        className="absolute inset-0 size-full transition-[translate] duration-700 ease-out-expo motion-safe:group-hover/tilt:translate-x-2"
-        focusable="false"
-      >
-        <defs>
-          <linearGradient id={heat} gradientUnits="userSpaceOnUse" x1="132" y1="131" x2="40" y2="202">
-            <stop offset="0" stopColor="#F59E0B" />
-            <stop offset="0.55" stopColor="#EA580C" />
-            <stop offset="1" stopColor="#B91C1C" />
-          </linearGradient>
-        </defs>
-        <path d={BULL_PATH} fill={`url(#${heat})`} fillOpacity={0.16} />
-        <path
-          d={BULL_PATH}
-          fill={`url(#${heat})`}
-          fillOpacity={0.3}
-          className="opacity-0 transition-opacity duration-500 ease-out-expo group-hover/tilt:opacity-100 motion-reduce:transition-none"
-        />
-        <path d={BULL_PATH} {...HAIRLINE} stroke={`url(#${heat})`} strokeWidth={1.5} strokeLinejoin="round" />
-      </svg>
-    </div>
+    <svg viewBox={BULL_VIEWBOX} className={cn("aspect-116/80", className)} aria-hidden="true" focusable="false">
+      <defs>
+        <linearGradient id={trail} gradientUnits="userSpaceOnUse" x1="22" y1="0" x2="138" y2="0">
+          <stop offset="0" stopColor="#F59E0B" stopOpacity="0" />
+          <stop offset="0.55" stopColor="#F59E0B" stopOpacity="0.6" />
+          <stop offset="1" stopColor="#F59E0B" />
+        </linearGradient>
+        <linearGradient id={heat} gradientUnits="userSpaceOnUse" x1="132" y1="131" x2="40" y2="202">
+          <stop offset="0" stopColor="#F59E0B" />
+          <stop offset="0.55" stopColor="#EA580C" />
+          <stop offset="1" stopColor="#B91C1C" />
+        </linearGradient>
+      </defs>
+      <path d="M22 203H138" {...HAIRLINE} stroke={`url(#${trail})`} strokeWidth={5} strokeOpacity={0.22} />
+      <path d="M22 203H138" {...HAIRLINE} stroke={`url(#${trail})`} strokeWidth={1} />
+      <path d={BULL_PATH} fill={`url(#${heat})`} fillOpacity={0.16} />
+      <path d={BULL_PATH} {...HAIRLINE} stroke={`url(#${heat})`} strokeWidth={1.5} strokeLinejoin="round" />
+    </svg>
   );
 }
 

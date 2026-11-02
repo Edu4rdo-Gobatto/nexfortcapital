@@ -1,5 +1,4 @@
-import { ArrowUpRight, MapPin, Star } from "lucide-react";
-import { Magnetic } from "@/components/motion/Magnetic";
+import { ArrowUpRight, MapPin } from "lucide-react";
 import { Reveal } from "@/components/motion/Reveal";
 import { RookBullCenterpiece } from "@/components/motion/RookBullCenterpiece";
 import { TextReveal } from "@/components/motion/TextReveal";
@@ -13,7 +12,7 @@ import { cn } from "@/lib/utils";
 const HEADING_ID = `${SECTION_IDS.hero}-titulo`;
 
 /**
- * O selo da marca ("... • MT • 5,0 ★ GOOGLE") quebra entre segmentos. Abaixo de 23rem o segmento longo não cabe
+ * O selo da marca ("... EM SINOP • MT") quebra entre segmentos. Abaixo de 23rem o segmento longo não cabe
  * inteiro na coluna e quebra também entre palavras, mas a última palavra (tail) segue presa ao separador,
  * que assim nunca abre uma linha.
  */
@@ -26,12 +25,12 @@ const BADGE_SEGMENTS = HERO.badge
     return { segment, head: segment.slice(0, tailStart), tail: segment.slice(tailStart) };
   });
 
-/** Versão falada do selo: sem "•" nem "★" para o leitor de tela soletrar. */
-const BADGE_SPOKEN = `Consultoria financeira em ${CONTACT.address.city} - ${CONTACT.address.state}, nota ${CONTACT.googleRating} no Google`;
+/** Versão falada do selo: sem "•" para o leitor de tela soletrar. */
+const BADGE_SPOKEN = `Consultoria financeira em ${CONTACT.address.city} - ${CONTACT.address.state}`;
 
 const HQ_CITY = `${CONTACT.address.city} - ${CONTACT.address.state}`;
 
-const NUMBER_OR_STAR = /(\d+(?:[.,]\d+)?|★)/;
+const NUMBERS = /(\d+(?:[.,]\d+)?)/;
 
 /**
  * Ajuste dos CTAs (tamanho lg) ao hero: no celular, largura total, texto 14px (o rótulo do WhatsApp cabe
@@ -39,13 +38,10 @@ const NUMBER_OR_STAR = /(\d+(?:[.,]\d+)?|★)/;
  */
 const CTA_FIT = "h-auto min-h-14 w-full px-4 py-3 text-center text-sm text-balance sm:h-14 sm:px-7 sm:py-0 sm:text-[0.95rem]";
 
-/** Números em JetBrains Mono (tabular) e a estrela como ícone, para renderizar igual em qualquer sistema. */
+/** Números em JetBrains Mono (tabular). */
 function Figures({ text }: { text: string }) {
-  return text.split(NUMBER_OR_STAR).map((part, index) => {
+  return text.split(NUMBERS).map((part, index) => {
     if (index % 2 === 0) return part;
-    if (part === "★") {
-      return <Star key={index} className="mx-px inline-block size-[1.1em] fill-current align-[-0.2em] text-gold" />;
-    }
     return (
       <span key={index} className="font-mono tracking-normal tabular-nums">
         {part}
@@ -68,8 +64,8 @@ export function HeroSection() {
 
       <div className="mx-auto w-full max-w-7xl px-5 sm:px-8">
         <div className="grid grid-cols-1 items-center gap-y-16 sm:gap-y-20 lg:grid-cols-12 lg:gap-x-8">
-          {/* No topo da linha (não centralizado): o emblema pode ser bem mais alto que o texto, e os CTAs precisam
-              ficar na primeira dobra. Assim o selo também se alinha à proa da fachada e ao topo do emblema. */}
+          {/* No topo da linha (não centralizado), como o emblema ao lado (lg:items-start): os CTAs ficam na primeira
+              dobra e o selo se alinha à proa da fachada e ao topo do emblema. */}
           <div className="lg:col-span-7 lg:self-start">
             {/* Entradas em keyframes CSS (trigger="load"): começam no primeiro paint, sem esperar a hidratação. */}
             <Reveal trigger="load">
@@ -122,12 +118,10 @@ export function HeroSection() {
               delay={0.65}
               className="mt-9 flex max-w-164 flex-col gap-3 sm:mt-10 sm:flex-row sm:flex-wrap sm:gap-4"
             >
-              <Magnetic className="w-full sm:w-auto sm:flex-auto">
-                <CtaLink href={CONTACT.whatsappUrl} external size="lg" className={CTA_FIT}>
-                  <WhatsAppIcon className="size-5 shrink-0" />
-                  {HERO.primaryCta}
-                </CtaLink>
-              </Magnetic>
+              <CtaLink href={CONTACT.whatsappUrl} external size="lg" className={cn(CTA_FIT, "sm:w-auto sm:flex-auto")}>
+                <WhatsAppIcon className="size-5 shrink-0" />
+                {HERO.primaryCta}
+              </CtaLink>
               <CtaLink
                 href={`#${SECTION_IDS.simulator}`}
                 variant="glass"
@@ -143,7 +137,7 @@ export function HeroSection() {
                 href={CONTACT.mapsUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group/hq inline-flex items-start gap-2.5 text-sm leading-snug text-muted hover:text-led focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
+                className="group/hq inline-flex items-start gap-2.5 text-sm leading-snug text-muted transition-[color] duration-200 ease-out-expo hover:text-led focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold"
               >
                 <MapPin className="mt-px size-4 shrink-0 text-gold" />
                 <span>
@@ -152,16 +146,17 @@ export function HeroSection() {
                   <span className="whitespace-nowrap">{HQ_CITY}</span>
                   <span className="sr-only"> (abre o Google Maps em nova aba)</span>
                 </span>
-                <ArrowUpRight className="mt-px size-4 shrink-0 transition-transform duration-300 ease-out-expo motion-safe:group-hover/hq:translate-x-0.5 motion-safe:group-hover/hq:-translate-y-0.5" />
+                <ArrowUpRight className="mt-px size-4 shrink-0 transition-transform duration-300 ease-out-expo motion-safe:group-hover/hq:translate-x-0.75" />
               </a>
             </Reveal>
           </div>
 
           {/* A partir de 84rem (container com margem externa) o emblema avança sobre o padding: 488 → 520px. */}
-          <div className="relative flex items-center justify-center lg:col-span-5 lg:self-stretch min-[84rem]:-mr-8">
+          <div className="relative flex items-center justify-center lg:col-span-5 lg:items-start lg:self-stretch min-[84rem]:-mr-8">
             <HeroFacade />
             {/* Calor do touro: brasa âmbar → carmesim atrás do emblema. Ancorado no topo da coluna, onde o palco
-                do emblema começa (o touro fica ~17rem abaixo no celular, ~21rem com a torre na largura cheia). Estático. */}
+                do emblema começa (lg:items-start; o touro fica ~17rem abaixo no celular, ~21rem com a torre na largura
+                cheia). Estático. */}
             <div
               aria-hidden="true"
               className="pointer-events-none absolute top-68 left-1/2 -z-10 aspect-square w-[min(120%,38rem)] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(closest-side,rgb(234_88_12/0.17),rgb(185_28_28/0.07)_55%,transparent)] sm:top-84"

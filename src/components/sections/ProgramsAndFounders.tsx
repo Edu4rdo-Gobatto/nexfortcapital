@@ -51,13 +51,13 @@ function Founders() {
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label={`Instagram de ${founder.name} (${founder.handle}), abre em nova aba`}
-                className="group/ig inline-flex max-w-full items-center gap-2.5 text-sm font-medium text-led hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold sm:text-base"
+                className="group/ig inline-flex max-w-full items-center gap-2.5 text-sm font-medium text-led transition-[color] duration-200 ease-out-expo hover:text-gold focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold sm:text-base"
               >
                 <InstagramIcon className="size-4 shrink-0 sm:size-5" />
-                <span className="min-w-0 truncate underline decoration-white/25 underline-offset-4 group-hover/ig:decoration-gold">
+                <span className="min-w-0 truncate underline decoration-white/25 underline-offset-4 transition-[text-decoration-color] duration-200 ease-out-expo group-hover/ig:decoration-gold">
                   {founder.handle}
                 </span>
-                <ArrowUpRight className="size-4 shrink-0 group-hover/ig:translate-x-0.5 group-hover/ig:-translate-y-0.5 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out-expo" />
+                <ArrowUpRight className="size-4 shrink-0 motion-safe:group-hover/ig:translate-x-0.75 motion-safe:transition-transform motion-safe:duration-300 motion-safe:ease-out-expo" />
               </a>
             </div>
           </li>

@@ -71,6 +71,11 @@ body {
   background-image: linear-gradient(135deg, var(--color-gold) 0%, var(--color-ember) 100%);
 }
 
+/* Hover/foco dos botões: a mesma rampa um tom acima (âmbar 400 → laranja 500). Clareia sem lavar a cor e sobe o contraste do texto ink. */
+@utility bg-cta-gradient-lit {
+  background-image: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+}
+
 @utility text-bull-gradient {
   background-image: linear-gradient(135deg, var(--color-gold) 0%, var(--color-ember) 55%, var(--color-crimson) 100%);
   background-clip: text;

@@ -1,4 +1,3 @@
-import { Magnetic } from "@/components/motion/Magnetic";
 import { ParallaxBox } from "@/components/motion/ParallaxBox";
 import { Reveal } from "@/components/motion/Reveal";
 import { TextReveal } from "@/components/motion/TextReveal";
@@ -34,8 +33,8 @@ export function HeadquartersFooter() {
 }
 
 /**
- * Fachada noturna em SVG com a fita de LED a 32°, placa de visita e o botão magnético de WhatsApp.
- * Server Component: o movimento fica nas ilhas de cliente (TextReveal, Reveal, ParallaxBox, Magnetic, luzes).
+ * Fachada noturna em SVG com a fita de LED a 32°, placa de visita e o botão de WhatsApp.
+ * Server Component: o movimento fica nas ilhas de cliente (TextReveal, Reveal, ParallaxBox, luzes).
  */
 export function HeadquartersSection() {
   return (
@@ -80,18 +79,16 @@ export function HeadquartersSection() {
           </Reveal>
           <div className="flex w-full items-center justify-center gap-6 lg:gap-10">
             <LedRail side="left" className="hidden min-w-8 flex-1 sm:block" />
-            <Magnetic strength={0.3} className="w-full sm:w-fit">
-              <CtaLink
-                variant="gold"
-                size="xl"
-                href={CONTACT.whatsappUrl}
-                external
-                className="w-full px-4 sm:w-auto sm:px-12 lg:h-24 lg:gap-4 lg:px-16 lg:text-2xl lg:[--cut:28px]"
-              >
-                <WhatsAppIcon className="size-6 shrink-0 sm:size-7 lg:size-8" />
-                {COPY.cta}
-              </CtaLink>
-            </Magnetic>
+            <CtaLink
+              variant="gold"
+              size="xl"
+              href={CONTACT.whatsappUrl}
+              external
+              className="w-full px-4 sm:w-auto sm:px-12 lg:h-24 lg:gap-4 lg:px-16 lg:text-2xl lg:[--cut:28px]"
+            >
+              <WhatsAppIcon className="size-6 shrink-0 sm:size-7 lg:size-8" />
+              {COPY.cta}
+            </CtaLink>
             <LedRail side="right" className="hidden min-w-8 flex-1 sm:block" />
           </div>
         </div>

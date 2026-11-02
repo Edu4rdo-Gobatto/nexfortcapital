@@ -3,7 +3,7 @@
 import type { CSSProperties, RefObject } from "react";
 import { ArrowUpRight, Phone } from "lucide-react";
 import { motion, stagger, useIsPresent, type Variants } from "motion/react";
-import { CtaLink } from "@/components/ui/CtaLink";
+import { CTA_ARROW, CtaLink } from "@/components/ui/CtaLink";
 import { CONTACT, NAV_LINKS } from "@/content/nexfort";
 import { EASE_OUT_EXPO, SPRING_SMOOTH } from "@/lib/animations";
 import { cn } from "@/lib/utils";
@@ -102,7 +102,7 @@ export function MobileMenu({ currentId, firstLinkRef, ctaHref, ctaLabel, onSecti
                     aria-current={isCurrent ? "true" : undefined}
                     onClick={() => onSectionLink(id)}
                     className={cn(
-                      "flex items-center justify-between gap-4 py-4 font-display text-[clamp(1.375rem,6.2vw,2.75rem)] leading-[1.1] tracking-[0.02em] text-led hover:text-gold",
+                      "flex items-center justify-between gap-4 py-4 font-display text-[clamp(1.375rem,6.2vw,2.75rem)] leading-[1.1] tracking-[0.02em] text-led transition-[color] duration-200 ease-out-expo hover:text-gold",
                       FOCUS_RING,
                     )}
                   >
@@ -127,7 +127,7 @@ export function MobileMenu({ currentId, firstLinkRef, ctaHref, ctaLabel, onSecti
           <motion.div variants={item} className="mt-auto flex flex-col gap-3 sm:items-start">
             <CtaLink variant="gold" size="lg" href={ctaHref} external onClick={onLeave} className="w-full sm:hidden">
               {ctaLabel}
-              <ArrowUpRight className="size-4" />
+              <ArrowUpRight className={cn("size-4", CTA_ARROW)} />
             </CtaLink>
             <CtaLink variant="glass" size="lg" href={CONTACT.phoneHref} onClick={onLeave} className="w-full sm:w-auto">
               <Phone className="size-4 text-gold" />

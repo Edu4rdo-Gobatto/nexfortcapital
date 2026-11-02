@@ -206,7 +206,7 @@ export function ProgramShowcase({ className }: { className?: string }) {
               onClick={() => setActive(index)}
               onKeyDown={(event) => handleKeyDown(event, index)}
               className={cn(
-                "relative isolate flex min-w-0 items-start gap-3 px-3.5 pt-5 pb-4 text-left sm:gap-4 sm:px-7 sm:pt-7 sm:pb-6",
+                "relative isolate flex min-w-0 items-start gap-3 px-3.5 pt-5 pb-4 text-left transition-[color] duration-200 ease-out-expo sm:gap-4 sm:px-7 sm:pt-7 sm:pb-6",
                 "focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-gold",
                 selected ? "text-led" : "cursor-pointer text-muted hover:text-led",
               )}

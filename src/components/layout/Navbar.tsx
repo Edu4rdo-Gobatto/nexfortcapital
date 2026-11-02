@@ -15,8 +15,7 @@ import { useLenis } from "lenis/react";
 import { MobileMenu } from "@/components/layout/MobileMenu";
 import { NavEmblem } from "@/components/layout/NavEmblem";
 import { useActiveSection } from "@/components/layout/useActiveSection";
-import { Magnetic } from "@/components/motion/Magnetic";
-import { CtaLink } from "@/components/ui/CtaLink";
+import { CTA_ARROW, CtaLink } from "@/components/ui/CtaLink";
 import { BRAND, NAV_LINKS, WHATSAPP_MESSAGES, whatsappLink } from "@/content/nexfort";
 import { EASE_OUT_EXPO, SPRING_SMOOTH } from "@/lib/animations";
 import { cn } from "@/lib/utils";
@@ -32,7 +31,7 @@ const FOCUS_RING = "focus-visible:outline-2 focus-visible:outline-offset-4 focus
 const INDICATOR_TRANSITION = { layout: SPRING_SMOOTH, opacity: { duration: 0.35, ease: EASE_OUT_EXPO } } as const;
 
 /**
- * Cabeçalho fixo: emblema animado, navegação com hover magnético e scrollspy (lg+),
+ * Cabeçalho fixo: emblema animado, navegação com scrollspy (lg+),
  * CTA de diagnóstico e menu em painel abaixo do lg. A borda inferior é uma fita de LED
  * que acompanha o progresso do scroll.
  */
@@ -127,7 +126,7 @@ export function Navbar() {
               href="#inicio"
               aria-label={`${BRAND.shortName}, voltar ao início`}
               onClick={closeForNavigation}
-              className={cn("group/brand flex shrink-0 items-center gap-3", FOCUS_RING)}
+              className={cn("flex shrink-0 items-center gap-3", FOCUS_RING)}
             >
               <NavEmblem className="h-9 w-auto lg:h-11" />
               {/* Entre 1024 e 1151px o menu completo não cabe ao lado do nome: ali, só o emblema.
@@ -140,12 +139,17 @@ export function Navbar() {
             <DesktopNav current={section.current} last={section.last} onSelect={section.prefer} />
 
             <div className="flex shrink-0 items-center gap-3">
-              <Magnetic className="hidden sm:inline-block">
-                <CtaLink variant="gold" size="md" href={CTA_HREF} external onClick={closeForNavigation}>
-                  {CTA_LABEL}
-                  <ArrowUpRight className="size-4 transition-[translate] duration-300 ease-out-expo motion-safe:group-hover/cta:translate-x-0.5 motion-safe:group-hover/cta:-translate-y-0.5" />
-                </CtaLink>
-              </Magnetic>
+              <CtaLink
+                variant="gold"
+                size="md"
+                href={CTA_HREF}
+                external
+                onClick={closeForNavigation}
+                className="hidden sm:inline-flex"
+              >
+                {CTA_LABEL}
+                <ArrowUpRight className={cn("size-4", CTA_ARROW)} />
+              </CtaLink>
               <MenuToggle ref={toggleRef} open={open} onToggle={() => setOpen((value) => !value)} />
             </div>
           </div>
@@ -179,8 +183,8 @@ type DesktopNavProps = {
 
 /**
  * Navegação do lg em diante. O indicador é um trecho aceso da fita de LED inferior: desliza entre
- * os links com layoutId e apaga (opacity) fora das seções do menu. Fica fora do <Magnetic> para não
- * ser arrastado pelo cursor; `layoutRoot` porque o cabeçalho é fixo.
+ * os links com layoutId e apaga (opacity) fora das seções do menu. Usa `layoutRoot` porque o
+ * cabeçalho é fixo.
  */
 function DesktopNav({ current, last, onSelect }: DesktopNavProps) {
   return (
@@ -192,20 +196,18 @@ function DesktopNav({ current, last, onSelect }: DesktopNavProps) {
             const isCurrent = current === id;
             return (
               <li key={link.href} className="relative flex items-center">
-                <Magnetic strength={0.25}>
-                  <a
-                    href={link.href}
-                    aria-current={isCurrent ? "true" : undefined}
-                    onClick={() => onSelect(id)}
-                    className={cn(
-                      "block px-2.5 py-2 text-sm whitespace-nowrap text-muted hover:text-led xl:px-3.5",
-                      isCurrent && "text-led",
-                      FOCUS_RING,
-                    )}
-                  >
-                    {link.label}
-                  </a>
-                </Magnetic>
+                <a
+                  href={link.href}
+                  aria-current={isCurrent ? "true" : undefined}
+                  onClick={() => onSelect(id)}
+                  className={cn(
+                    "block px-2.5 py-2 text-sm whitespace-nowrap text-muted transition-[color] duration-200 ease-out-expo hover:text-led xl:px-3.5",
+                    isCurrent && "text-led",
+                    FOCUS_RING,
+                  )}
+                >
+                  {link.label}
+                </a>
                 {last === id ? (
                   <motion.span
                     aria-hidden="true"

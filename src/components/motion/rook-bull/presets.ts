@@ -3,14 +3,11 @@
 // Variantes e transições compartilhadas pelas camadas do emblema. Os rótulos "hidden" → "drawn"
 // vêm do palco (RookBullCenterpiece); cada filho recebe a sua etapa da linha do tempo via `custom`.
 import type { Transition, Variants } from "motion/react";
-import { EASE_OUT_EXPO, SPRING_SMOOTH } from "@/lib/animations";
+import { EASE_OUT_EXPO } from "@/lib/animations";
 import { INSTANT, type Step } from "./constants";
 
-/** Resposta de opacidade às trocas de modo (tween com a curva do projeto, sem overshoot). */
-export const MODE_FADE = { duration: 0.55, ease: EASE_OUT_EXPO } as const satisfies Transition;
-
-/** Escala com a mola padrão; opacidade com a curva de saída. */
-export const MODE_SHIFT = { ...SPRING_SMOOTH, opacity: MODE_FADE } as const satisfies Transition;
+/** Fade de opacidade com a curva do projeto (tween, sem overshoot). */
+export const SOFT_FADE = { duration: 0.55, ease: EASE_OUT_EXPO } as const satisfies Transition;
 
 /** Com movimento reduzido, toda etapa vira instantânea (estado final composto de imediato). */
 export function stepFor(step: Step, reduce: boolean | null): Step {

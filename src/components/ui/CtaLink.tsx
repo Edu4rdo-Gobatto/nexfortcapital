@@ -23,8 +23,21 @@ const TEXT: Record<CtaVariant, string> = {
 };
 
 /**
+ * Realce no hover/foco (só opacity): o ouro passa à rampa um tom acima (mais contraste com o texto ink, sem lavar
+ * a cor); no vidro, borda e fundo clareiam de leve.
+ */
+const LIFT: Record<CtaVariant, string> = {
+  gold: "bg-cta-gradient-lit group-hover/cta:opacity-100 group-focus-visible/cta:opacity-100",
+  glass: "bg-white group-hover/cta:opacity-8 group-focus-visible/cta:opacity-8",
+};
+
+/** Seta interna do CTA: avança 3px no hover (só transform). */
+export const CTA_ARROW = "transition-[translate] duration-300 ease-out-expo motion-safe:group-hover/cta:translate-x-0.75";
+
+/**
  * Link com cara de botão e canto chanfrado. O recorte fica nas camadas internas,
- * então o anel de foco do teclado nunca é cortado. Hover anima só opacity/transform.
+ * então o anel de foco do teclado nunca é cortado. No hover/foco a placa clareia (LIFT, só opacity);
+ * no hover, a seta interna avança 3px (CTA_ARROW). Sem varredura de brilho.
  */
 export function CtaLink({
   variant = "gold",
@@ -58,10 +71,14 @@ export function CtaLink({
           <span aria-hidden className="clip-chamfer absolute inset-px -z-10 bg-[#0b1020]/80 backdrop-blur-md" />
         </>
       )}
-      {/* Varredura de LED no hover: só transform + opacity. */}
-      <span aria-hidden className="clip-chamfer pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <span className="absolute inset-y-0 -left-1/2 w-1/2 -translate-x-full skew-x-[-32deg] bg-linear-to-r from-transparent via-white/35 to-transparent opacity-0 transition-[translate,opacity] duration-700 ease-out-expo group-hover/cta:translate-x-[320%] group-hover/cta:opacity-100 motion-reduce:hidden" />
-      </span>
+      {/* Realce do hover/foco: camada acima da placa e abaixo do texto (só opacity). */}
+      <span
+        aria-hidden
+        className={cn(
+          "clip-chamfer pointer-events-none absolute inset-0 -z-10 opacity-0 transition-opacity duration-300 ease-out-expo",
+          LIFT[variant],
+        )}
+      />
       {children}
       {external ? <span className="sr-only"> (abre em nova aba)</span> : null}
     </a>

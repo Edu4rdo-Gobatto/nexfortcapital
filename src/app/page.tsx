@@ -1,7 +1,6 @@
 import { Navbar } from "@/components/layout/Navbar";
 import { HeadquartersSection, SiteFooter } from "@/components/sections/HeadquartersFooter";
 import { HeroSection } from "@/components/sections/HeroSection";
-import { MarketTicker } from "@/components/sections/MarketTicker";
 import { PillarsBentoGrid } from "@/components/sections/PillarsBentoGrid";
 import { ProgramsAndFounders } from "@/components/sections/ProgramsAndFounders";
 import { TowerAndBullStory } from "@/components/sections/TowerAndBullStory";
@@ -18,7 +17,6 @@ export default function Home() {
       <Navbar />
       <main id="conteudo" tabIndex={-1} className="focus:outline-none">
         <HeroSection />
-        <MarketTicker />
         <TowerAndBullStory />
         <LedDivider />
         <PillarsBentoGrid />

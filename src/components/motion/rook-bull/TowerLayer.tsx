@@ -2,8 +2,8 @@
 
 import { motion } from "motion/react";
 import { BULL_PATH, EMBLEM_VIEWBOX, ROOK_GROOVE_PATH, ROOK_PATH, ROOK_STROKES } from "@/components/brand/geometry";
-import { DETAIL_STAGGER, TIMELINE, type Step, type VisualMode } from "./constants";
-import { MODE_FADE, drawStroke, fadeIn, stepFor } from "./presets";
+import { DETAIL_STAGGER, TIMELINE, type Step } from "./constants";
+import { drawStroke, fadeIn, stepFor } from "./presets";
 
 /** Trechos sob o colar que ROOK_STROKES não percorre: fecham o contorno entre o colar e a coluna. */
 const COLLAR_UNDERSIDE = ["M32 44H22", "M128 44H138"] as const;
@@ -43,7 +43,6 @@ const ROOK_MASK_STYLE = {
 type TowerLayerProps = {
   /** Prefixo de ids SVG já higienizado. */
   uid: string;
-  mode: VisualMode;
   reduce: boolean | null;
 };
 
@@ -51,7 +50,7 @@ type TowerLayerProps = {
  * Camada da torre (governança, proteção, estratégia). Herda os rótulos "hidden"/"drawn" do palco:
  * desenha o contorno em ordem de construção, depois acende o preenchimento azul-marinho.
  */
-export function TowerLayer({ uid, mode, reduce }: TowerLayerProps) {
+export function TowerLayer({ uid, reduce }: TowerLayerProps) {
   const fillId = `${uid}-tower-fill`;
   const shadeId = `${uid}-tower-shade`;
   const clipId = `${uid}-tower-clip`;
@@ -133,21 +132,6 @@ export function TowerLayer({ uid, mode, reduce }: TowerLayerProps) {
             <motion.path key={stroke.d} d={stroke.d} variants={drawStroke} custom={stepFor(stroke.step, reduce)} />
           ))}
         </g>
-
-        {/* Modo Torre: a estrutura acende (brilho royal mais forte sobre o contorno e as juntas). */}
-        <motion.g
-          fill="none"
-          strokeLinejoin="round"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: mode === "tower" ? 1 : 0 }}
-          transition={MODE_FADE}
-        >
-          <path d={ROOK_PATH} stroke="#3B55C4" strokeWidth="3.6" filter={`url(#${glowId})`} />
-          <path d={ROOK_PATH} stroke="#8EA2FF" strokeWidth="0.9" />
-          {ROOK_STROKES.details.map((d) => (
-            <path key={d} d={d} stroke="#6F86F0" strokeWidth="0.6" />
-          ))}
-        </motion.g>
 
         {/* Friso de LED sob o colar: a mesma luz branca da fachada. */}
         <motion.path

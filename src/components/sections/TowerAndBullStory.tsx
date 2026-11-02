@@ -115,9 +115,6 @@ export function TowerAndBullStory() {
         >
           O Método Torre &amp; Touro
         </h2>
-        <p className="mt-5 max-w-[62ch] text-base leading-relaxed text-muted sm:text-lg">
-          Primeiro organizamos e protegemos a base. Só depois o excedente vai para a multiplicação.
-        </p>
       </div>
 
       <div ref={stageRef} className="group/stage relative data-pinned:h-svh data-pinned:overflow-hidden">

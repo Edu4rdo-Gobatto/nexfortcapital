@@ -32,11 +32,3 @@ export function InstagramIcon(props: IconProps) {
     </svg>
   );
 }
-
-export function GoogleIcon(props: IconProps) {
-  return (
-    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false" {...props}>
-      <path fill="#EA4335" d="M12 10.2v3.9h5.45c-.24 1.4-1.66 4.1-5.45 4.1-3.28 0-5.96-2.72-5.96-6.07S8.72 6.06 12 6.06c1.87 0 3.12.8 3.84 1.48l2.62-2.52C16.78 3.45 14.6 2.5 12 2.5 6.75 2.5 2.5 6.75 2.5 12s4.25 9.5 9.5 9.5c5.48 0 9.12-3.85 9.12-9.28 0-.62-.07-1.1-.15-1.57L12 10.2Z" />
-    </svg>
-  );
-}

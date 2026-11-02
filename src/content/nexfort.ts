@@ -48,8 +48,6 @@ export const CONTACT = {
     "https://www.google.com/maps/search/?api=1&query=Av.+Das+Artes,+253+-+Aquarela+das+Artes,+Sinop+-+MT,+78555-474",
   instagramUrl: "https://instagram.com/nexfortcapital",
   instagramHandle: "@nexfortcapital",
-  googleRating: "5,0",
-  googleRatingLabel: "5.0 ★ (Avaliação Máxima no Google)",
   openingHours: "Segunda a Sexta • Abre às 08:00",
   /**
    * Status de atendimento (fuso de Sinop, America/Cuiaba). "Abre seg. às 08:00" só é verdade no fim de semana;
@@ -82,7 +80,7 @@ export const SECTION_IDS = {
 } as const;
 
 export const HERO = {
-  badge: "CONSULTORIA FINANCEIRA EM SINOP • MT • 5,0 ★ GOOGLE",
+  badge: "CONSULTORIA FINANCEIRA EM SINOP • MT",
   headline: BRAND.slogan,
   subheadline:
     "Mostramos a melhor forma de gerir o seu dinheiro, investir na Bolsa com estratégia e alavancar os seus negócios, com método, indicadores e acompanhamento próximo.",
@@ -100,62 +98,14 @@ export const HERO_TELEMETRY = [
 
 export type TelemetrySignal = (typeof HERO_TELEMETRY)[number]["signal"];
 
-/** Gatilhos de modo do RookBullCenterpiece. Métricas descrevem o serviço, não prometem retorno. */
-export const CENTERPIECE_MODES = {
-  tower: {
-    trigger: "Modo Torre",
-    title: "Proteção & Gestão",
-    metrics: [
-      { label: "Fluxo de caixa", value: "Previsível" },
-      { label: "DRE gerencial", value: "Mensal" },
-      { label: "Reserva estratégica", value: "6–12 meses" },
-    ],
-  },
-  bull: {
-    trigger: "Modo Touro",
-    title: "Multiplicação & Bolsa",
-    metrics: [
-      { label: "Carteira", value: "Personalizada" },
-      { label: "Classes de ativos", value: "Ações, FIIs, RF" },
-      { label: "Rebalanceamento", value: "Periódico" },
-    ],
-  },
-} as const;
-
-export type CenterpieceMode = keyof typeof CENTERPIECE_MODES;
-
-export const TICKER_ITEMS = [
-  "Finanças Empresariais",
-  "Fluxo de Caixa & Valuation",
-  "Finanças Pessoais",
-  "Renda Variável & Bolsa de Valores",
-  "Imersão Torre Mestra (ITM)",
-  "Finance Pro",
-  "Sede Própria em Sinop/MT",
-] as const;
-
 export const STORY_PHASES = [
   {
     key: "tower",
     symbol: "A Torre",
-    title: "A Base Inabalável",
-    body: "Antes de multiplicar, organizamos. Estruturamos as finanças pessoais e empresariais, estancamos os ralos financeiros e criamos previsibilidade de caixa.",
-    points: [
-      "Mapa completo de entradas, saídas e margens",
-      "Ralos financeiros identificados e estancados",
-      "Caixa previsível, mês a mês",
-    ],
   },
   {
     key: "bull",
     symbol: "O Touro",
-    title: "A Força da Multiplicação",
-    body: "Com a base protegida, o capital excedente é alocado na Bolsa de Valores e em ativos estratégicos para gerar liberdade financeira real.",
-    points: [
-      "Excedente direcionado com propósito",
-      "Bolsa de Valores e ativos estratégicos",
-      "Patrimônio trabalhando pela sua liberdade",
-    ],
   },
 ] as const;
 

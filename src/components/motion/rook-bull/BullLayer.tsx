@@ -11,9 +11,8 @@ import {
   TIMELINE,
   type Particle,
   type Step,
-  type VisualMode,
 } from "./constants";
-import { MODE_FADE, MODE_SHIFT, fadeIn, stepFor } from "./presets";
+import { SOFT_FADE, fadeIn, stepFor } from "./presets";
 
 /** Onda de calor: o grupo (preenchimento + frente quente) atravessa o recorte do touro da esquerda para a direita. */
 const heatSweep = {
@@ -61,7 +60,6 @@ function RisingCandle({ particle, clock }: { particle: Particle; clock: MotionVa
 
 type BullLayerProps = {
   uid: string;
-  mode: VisualMode;
   reduce: boolean | null;
   /** A ignição terminou: partículas e cards podem entrar. */
   ignited: boolean;
@@ -74,18 +72,16 @@ type BullLayerProps = {
  * Camada do touro (multiplicação, energia). SVG próprio, recortado por ROOK_PATH, numa camada HTML
  * separada da torre para receber a paralaxe e a rotação 3D do ponteiro.
  */
-export function BullLayer({ uid, mode, reduce, ignited, clock, onIgnite }: BullLayerProps) {
+export function BullLayer({ uid, reduce, ignited, clock, onIgnite }: BullLayerProps) {
   const rookClip = `${uid}-bull-rook`;
   const shapeClip = `${uid}-bull-shape`;
   const heatId = `${uid}-bull-heat`;
   const frontId = `${uid}-bull-front`;
-  const shineId = `${uid}-bull-shine`;
   const sheenId = `${uid}-bull-sheen`;
-  const bullMode = mode === "bull";
 
   return (
     <>
-      {/* Brilho dourado atrás do touro (gradiente radial: só opacidade e escala animam). */}
+      {/* Brilho dourado atrás do touro (gradiente radial: só a opacidade anima). */}
       <motion.div
         aria-hidden="true"
         className="pointer-events-none absolute size-[96%] -translate-x-1/2 -translate-y-1/2"
@@ -93,15 +89,7 @@ export function BullLayer({ uid, mode, reduce, ignited, clock, onIgnite }: BullL
         variants={fadeIn}
         custom={stepFor(TIMELINE.glow, reduce)}
       >
-        <motion.div
-          className="size-full bg-[radial-gradient(closest-side,rgb(245_158_11/0.4),rgb(234_88_12/0.16)_52%,transparent)]"
-          initial={{ opacity: 0.6, scale: 1 }}
-          animate={{
-            opacity: bullMode ? 1 : mode === "tower" ? 0.2 : 0.6,
-            scale: bullMode ? 1.32 : mode === "tower" ? 0.9 : 1,
-          }}
-          transition={MODE_SHIFT}
-        />
+        <div className="size-full bg-[radial-gradient(closest-side,rgb(245_158_11/0.4),rgb(234_88_12/0.16)_52%,transparent)] opacity-60" />
       </motion.div>
       <motion.div
         aria-hidden="true"
@@ -153,11 +141,6 @@ export function BullLayer({ uid, mode, reduce, ignited, clock, onIgnite }: BullL
             <stop offset="0" stopColor="#FFF4D6" stopOpacity="0.34" />
             <stop offset="1" stopColor="#FFF4D6" stopOpacity="0" />
           </linearGradient>
-          <linearGradient id={shineId} gradientUnits="userSpaceOnUse" x1="52" y1="132" x2="104" y2="198">
-            <stop offset="0" stopColor="#FDE68A" stopOpacity="0.8" />
-            <stop offset="0.55" stopColor="#F59E0B" stopOpacity="0.12" />
-            <stop offset="1" stopColor="#F59E0B" stopOpacity="0" />
-          </linearGradient>
         </defs>
 
         <g clipPath={`url(#${rookClip})`}>
@@ -165,7 +148,7 @@ export function BullLayer({ uid, mode, reduce, ignited, clock, onIgnite }: BullL
           <motion.g
             initial={{ opacity: 0 }}
             animate={{ opacity: ignited && reduce === false ? 1 : 0 }}
-            transition={MODE_FADE}
+            transition={SOFT_FADE}
           >
             {PARTICLES.map((particle) => (
               <RisingCandle key={`${particle.x}-${particle.y}`} particle={particle} clock={clock} />
@@ -184,14 +167,6 @@ export function BullLayer({ uid, mode, reduce, ignited, clock, onIgnite }: BullL
               <rect x={SWEEP.fillX} y={SWEEP.y} width={SWEEP.fillWidth} height="30" fill={`url(#${sheenId})`} />
               <rect x={SWEEP.frontX} y={SWEEP.y} width={SWEEP.frontWidth} height={SWEEP.height} fill={`url(#${frontId})`} />
             </motion.g>
-            {/* Modo Touro: brilho interno mais quente. */}
-            <motion.path
-              d={BULL_PATH}
-              fill={`url(#${shineId})`}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: bullMode ? 1 : 0 }}
-              transition={MODE_FADE}
-            />
           </g>
         </g>
       </svg>

@@ -3,10 +3,7 @@
  * Coordenadas de SVG vivem no espaço do emblema: viewBox "0 0 160 240".
  */
 import { BULL_BOUNDS } from "@/components/brand/geometry";
-import type { CenterpieceMode, HERO_TELEMETRY } from "@/content/nexfort";
-
-/** Modo visual ativo (null = neutro). */
-export type VisualMode = CenterpieceMode | null;
+import type { HERO_TELEMETRY } from "@/content/nexfort";
 
 /** Atraso e duração (s) de uma etapa da coreografia. */
 export type Step = { readonly delay: number; readonly duration: number };
@@ -46,15 +43,12 @@ export const PARALLAX = { tower: 6, bull: 14, tiltX: 4, tiltY: 6 } as const;
 
 /**
  * Normalização do ponteiro: o raio de alcance é 1.2× a metade do palco (o máximo só chega longe do centro)
- * e o eixo vertical pesa 0.7, para que repousar o cursor nos gatilhos abaixo não incline demais o emblema.
+ * e o eixo vertical pesa 0.7, para a inclinação vertical ficar mais contida.
  */
 export const POINTER_REACH = 1.2;
 export const POINTER_VERTICAL = 0.7;
 
-/** Velocidade do gráfico de fundo por modo (1 = ritmo neutro). */
-export const CHART_SPEED = { neutral: 1, tower: 0.45, bull: 3.2 } as const;
-
-/** Segundos por ciclo completo do gráfico no ritmo neutro. */
+/** Segundos por ciclo completo do gráfico. */
 export const CHART_CYCLE_SECONDS = 18;
 
 /** Largura (unidades do SVG) de um ciclo do gráfico; a faixa desenha dois ciclos lado a lado. */
@@ -147,12 +141,6 @@ export const TELEMETRY_SLOT: Record<TelemetryCode, string> = {
   B2B: "@min-[29rem]:right-0 @min-[29rem]:top-[calc(var(--stage-pt)+var(--tower-w)*0.3375)]",
   CDI: "@min-[29rem]:left-0 @min-[29rem]:bottom-[calc(var(--stage-pb)+var(--tower-w)*0.3375)]",
   IBOV: "@min-[29rem]:right-0 @min-[29rem]:bottom-[calc(var(--stage-pb)+var(--tower-w)*0.3375)]",
-};
-
-/** Cards em destaque por modo: a Torre acende estrutura e proteção; o Touro acende a renda variável. */
-export const TELEMETRY_FOCUS: Record<CenterpieceMode, readonly TelemetryCode[]> = {
-  tower: ["CDI", "PAT", "B2B"],
-  bull: ["IBOV"],
 };
 
 /** Flutuação ociosa dos cards: amplitude (px) e períodos (s) diferentes para não sincronizarem. */

@@ -2,7 +2,6 @@
 
 import { useEffect, useId, useMemo, useState } from "react";
 import { motion } from "motion/react";
-import { Magnetic } from "@/components/motion/Magnetic";
 import { WhatsAppIcon } from "@/components/ui/BrandIcons";
 import { CtaLink } from "@/components/ui/CtaLink";
 import { SIMULATOR, WHATSAPP_MESSAGES, whatsappLink } from "@/content/nexfort";
@@ -264,19 +263,17 @@ export function SimulatorConsole({ className }: SimulatorConsoleProps) {
           <div className="mt-6 lg:mt-auto lg:pt-8">
             <p className="max-w-[62ch] text-xs leading-relaxed text-muted">{SIMULATOR.disclaimer}</p>
             <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-6">
-              <Magnetic strength={0.2} className="block w-full shrink-0 sm:inline-block sm:w-fit">
-                <CtaLink
-                  variant="gold"
-                  size="lg"
-                  href={CTA_HREF}
-                  external
-                  aria-describedby={ids.ctaHint}
-                  className="w-full sm:w-auto"
-                >
-                  <WhatsAppIcon className="size-5 shrink-0" />
-                  Quero montar meu plano
-                </CtaLink>
-              </Magnetic>
+              <CtaLink
+                variant="gold"
+                size="lg"
+                href={CTA_HREF}
+                external
+                aria-describedby={ids.ctaHint}
+                className="w-full shrink-0 sm:w-auto"
+              >
+                <WhatsAppIcon className="size-5 shrink-0" />
+                Quero montar meu plano
+              </CtaLink>
               <p id={ids.ctaHint} className="text-xs text-muted">
                 Abre o WhatsApp com uma mensagem pronta para a equipe Nexfort.
               </p>

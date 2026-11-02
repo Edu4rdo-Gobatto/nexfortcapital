@@ -8,9 +8,6 @@ export const EASE_OUT_EXPO = [0.22, 1, 0.36, 1] as const;
 /** Mola padrão do projeto (CLAUDE.md). `type: 'spring'` é obrigatório: sem ele o Motion faz um tween de 0.3s. */
 export const SPRING_SMOOTH = { type: "spring", stiffness: 300, damping: 30, mass: 1 } as const satisfies Transition;
 
-/** Mola com overshoot visível, para respostas a gestos (magnetic, toggles). */
-export const SPRING_BOUNCY = { type: "spring", stiffness: 400, damping: 20, mass: 1 } as const satisfies Transition;
-
 /** Entrada padrão: sobe com mola; a opacidade usa a curva de saída para não "quicar". */
 export const fadeInUp = {
   hidden: { opacity: 0, y: 24 },

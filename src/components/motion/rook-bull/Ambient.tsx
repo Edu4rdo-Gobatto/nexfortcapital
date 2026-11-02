@@ -1,8 +1,8 @@
 "use client";
 
 import { motion } from "motion/react";
-import { TIMELINE, type VisualMode } from "./constants";
-import { MODE_SHIFT, fadeIn, openLine, stepFor } from "./presets";
+import { TIMELINE } from "./constants";
+import { fadeIn, openLine, stepFor } from "./presets";
 
 const TICKS = [
   "top-0 left-0 border-t border-l",
@@ -22,8 +22,8 @@ export function CornerTicks() {
   );
 }
 
-/** Halo royal atrás da torre (estrutura/proteção): mais forte no Modo Torre, recua no Modo Touro. */
-export function RoyalHalo({ mode, reduce }: { mode: VisualMode; reduce: boolean | null }) {
+/** Halo royal atrás da torre (estrutura/proteção). */
+export function RoyalHalo({ reduce }: { reduce: boolean | null }) {
   return (
     <motion.div
       aria-hidden="true"
@@ -31,15 +31,7 @@ export function RoyalHalo({ mode, reduce }: { mode: VisualMode; reduce: boolean 
       variants={fadeIn}
       custom={stepFor(TIMELINE.halo, reduce)}
     >
-      <motion.div
-        className="size-full bg-[radial-gradient(closest-side,rgb(59_85_196/0.26),rgb(30_45_107/0.16)_48%,transparent)]"
-        initial={{ opacity: 0.75, scale: 1 }}
-        animate={{
-          opacity: mode === "tower" ? 1 : mode === "bull" ? 0.4 : 0.75,
-          scale: mode === "tower" ? 1.06 : 1,
-        }}
-        transition={MODE_SHIFT}
-      />
+      <div className="size-full bg-[radial-gradient(closest-side,rgb(59_85_196/0.26),rgb(30_45_107/0.16)_48%,transparent)] opacity-75" />
     </motion.div>
   );
 }
