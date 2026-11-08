@@ -1,18 +1,33 @@
 # Nexfort Capital: landing page
 
-Landing page da **Nexfort Capital Consultoria** (Finanças Empresariais, Finanças Pessoais e Investimentos, Sinop - MT).
-Conceito visual: *Fortaleza Financeira & Brutalismo Arquitetônico de Luxo*. Ele vem do concreto escuro da sede (Av. Das Artes, 253), da linha diagonal de LED da fachada (~32°) e do emblema Torre de xadrez + Touro.
+Proposta de site para a **Nexfort Capital Consultoria** (Finanças Empresariais, Finanças Pessoais e Investimentos, Sinop - MT).
+
+## Estado atual: projeto zerado
+
+Em 08/11/2026 a versão anterior do site foi removida por completo. Hoje o projeto é **uma página em branco**. A nova direção visual está em definição: a ideia em estudo é uma **arte 3D do logo da empresa**.
+
+> **Descartado:** a abertura em que o touro e o urso correm e se chocam. Ela não será usada nem retomada.
+
+Contexto, decisões, referências e próximos passos: **`MEMORIA_DO_PROJETO.md`**.
+
+## O que ficou no repositório
+
+| Caminho | O quê |
+| --- | --- |
+| `src/app/` | `layout.tsx`, `page.tsx` (vazia) e `globals.css` (só o import do Tailwind) |
+| `design/referencias/logo-nexfort-original.png` | Logo original do cliente, 1080 px: matéria-prima da arte 3D. Não é servido pelo site |
+| `MEMORIA_DO_PROJETO.md` | Memória do projeto: contexto, histórico, decisões e nova direção |
+| `CLAUDE.md` / `AGENTS.md` | Regras de engenharia e motion para a IA |
+| `ESTUDO_MOTION_STACK.md` | Guia rápido de quando usar cada biblioteca de animação |
+| `.agents/`, `.claude/` | Skills instaladas para a IA (`frontend-design`, `vercel-react-best-practices`) |
+
+A versão anterior inteira continua no histórico do Git (último commit dela: `83bc42e`). Para recuperar um arquivo: `git show 83bc42e:<caminho>`.
 
 ## Stack
 
 - **Next.js 16.4** (App Router, Turbopack, `cacheComponents`) + **React 19.3** + TypeScript estrito
-- **Tailwind CSS 4.3** (tokens CSS-first em `src/app/globals.css`)
-- **Motion 14** (`motion/react`): micro-interações, molas, `layoutId`, contadores
-- **GSAP 3.15 + ScrollTrigger** (`@gsap/react`): pin e scrub do storytelling, parallax
-- **Lenis 1.3** (`lenis/react`): scroll com inércia, dirigido pelo `gsap.ticker` e sincronizado ao ScrollTrigger
-- **next-view-transitions**: transições nativas de rota
-
-Regras de engenharia e motion: veja `CLAUDE.md`. Guia rápido da stack: `ESTUDO_MOTION_STACK.md`.
+- **Tailwind CSS 4**
+- Instaladas e ainda sem uso: **Motion 14** (`motion/react`), **GSAP 3.15** (`@gsap/react`), **Lenis**, **next-view-transitions**
 
 ## Comandos
 
@@ -22,51 +37,6 @@ npm run build   # build de produção (valida TypeScript e prerender)
 npm run start   # serve o build de produção
 npm run lint    # ESLint (o build não roda lint)
 ```
-
-## Onde editar
-
-| O quê | Onde |
-| --- | --- |
-| **Textos, contatos, links, WhatsApp, programas, sócios, premissas do simulador** | `src/content/nexfort.ts` (fonte única) |
-| Cores, fontes e utilitários (`led-line`, `clip-chamfer`, `concrete-noise`, `bg-bull-gradient`) | `src/app/globals.css` |
-| Fontes (Cinzel, Plus Jakarta Sans, JetBrains Mono), metadados e SEO | `src/app/layout.tsx` |
-| Ordem das seções e divisores | `src/app/page.tsx` |
-| Geometria do emblema (Torre + Touro) | `src/components/brand/geometry.ts` |
-| Física/curvas padrão do Motion | `src/lib/animations.ts` |
-| Matemática do simulador | `src/lib/finance.ts` |
-| Dados estruturados (schema.org) | `src/components/seo/JsonLd.tsx` |
-
-## Estrutura
-
-```
-src/
-  app/               layout (providers, fontes, metadata), page, globals.css, icon.svg
-  content/           nexfort.ts: todo o conteúdo da página
-  lib/               animations.ts, finance.ts, utils.ts (cn)
-  components/
-    providers/       MotionProvider (reduced motion global), SmoothScrollProvider (Lenis + GSAP)
-    motion/          TextReveal, ParallaxBox, Reveal, RookBullCenterpiece (+ rook-bull/)
-    brand/           NexfortLogo / NexfortEmblem + geometry.ts
-    ui/              CtaLink (botão chanfrado), LedDivider, BrandIcons (WhatsApp, Instagram)
-    layout/          Navbar (+ menu mobile, scrollspy)
-    sections/        Hero, TowerAndBullStory, PillarsBentoGrid,
-                     WealthSimulator, ProgramsAndFounders, HeadquartersFooter
-    seo/             JsonLd
-```
-
-## Antes de publicar (validar com a Nexfort)
-
-- **Premissas do simulador** (`SIMULATOR` em `nexfort.ts`): a poupança usa 6,17% a.a. e o cenário Nexfort, **12% a.a. hipotético**. O aviso legal é exibido junto ao gráfico. Confirme os números e o texto com a equipe (regras da CVM: sem promessa de retorno).
-- **Próxima edição da ITM**: a linha do tempo mostra um marcador "Próxima edição". Confirme que há uma nova edição prevista.
-- **Missão**: a frase em `BRAND.mission` é atribuída à empresa, não aos sócios. Valide o texto.
-- **Fotos dos sócios**: hoje os sócios aparecem com monogramas. Se houver fotos, podem substituí-los.
-- **Domínio**: defina a variável de ambiente `NEXT_PUBLIC_SITE_URL` (ex.: `https://www.seudominio.com.br`) para que a imagem de compartilhamento (`src/app/opengraph-image.jpg`, 62 KB, prévia de link no WhatsApp e redes) seja servida com URL absoluta. Na Vercel isso é automático.
-
-## Acessibilidade e performance
-
-- `prefers-reduced-motion` é respeitado em todas as camadas: Motion (global), GSAP (`gsap.matchMedia`), Lenis (`respectReducedMotion`) e CSS (`motion-safe:`).
-- O conteúdo animado tem texto acessível (`sr-only`). O emblema do hero tem botão de pausa (WCAG 2.2.2) e o menu mobile prende o foco.
-- As animações usam apenas `transform`/`opacity` (e `pathLength` para desenho de linhas); a exceção são as transições de cor (200 ms, `ease-out-expo`) no hover dos links de texto (navegação, rodapé, endereço, telefone, Instagram) e das abas dos programas. Laços infinitos pausam fora da tela.
 
 ## Observação sobre OneDrive
 
