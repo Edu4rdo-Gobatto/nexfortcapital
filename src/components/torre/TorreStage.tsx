@@ -10,6 +10,7 @@ import {
   onSceneReady,
   poseAt,
   requestSnap,
+  setInstant,
   worldPerPx,
   writeTarget,
   type Rest,
@@ -57,9 +58,10 @@ export function TorreStage({ children }: { children: ReactNode }) {
 
       mm.add(
         // "always" garante que a função rode mesmo quando nenhuma das outras condições casa (desktop, movimento normal)
-        { always: "all", reduce: "(prefers-reduced-motion: reduce)", stacked: "(max-width: 1023px)" },
+        { always: "all", reduce: "(prefers-reduced-motion: reduce)", stacked: "(max-width: 63.99rem)" }, // 64rem = o lg do Tailwind, em rem como ele
         (ctx) => {
           const { reduce = false, stacked = false } = ctx.conditions ?? {};
+          setInstant(rig, reduce); // menos movimento: a pose troca de uma vez, com a Torre esmaecida
           let rests: Rest[] = [];
 
           const apply = (scroll: number) => {
@@ -85,6 +87,8 @@ export function TorreStage({ children }: { children: ReactNode }) {
 
           const measure = () => {
             rests = measureRests(anchors, window.innerHeight, ScrollTrigger.maxScroll(window));
+            // o descanso (rolagem) de cada âncora fica no DOM como estado do app: os roteiros de QA leem daqui, não refazem a regra
+            rests.forEach((rest, i) => (anchors[i].dataset.torreRest = String(Math.round(rest.s))));
           };
 
           const trigger = ScrollTrigger.create({

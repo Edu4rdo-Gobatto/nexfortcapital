@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* ------------------------------------------------------------------ tokens (direção: porcelana, tinta marinho) */
+/* ------------------------------------------------------------------ tokens (paleta 60-30-10, em OKLCH no comentário) */
 
 @theme inline {
   --font-display: var(--font-newsreader), "Times New Roman", serif;
@@ -8,11 +8,19 @@
 }
 
 @theme {
-  --color-porcelain: #f3f1ec;
+  /* 60%: fundo. Neutro tingido ANÁLOGO ao marinho (matiz a ~27° dele, croma ~0,005): conversa com o índigo, sem o
+     clínico do cinza puro. O porcelana antigo (#f3f1ec) era tingido para o lado do destaque, a ~178° do marinho. */
+  --color-paper: #f6f5f9; /* oklch(0.972 0.005 297.7) */
+  --color-paper-deep: #ebe9f2; /* oklch(0.938 0.012 296.3): retratos provisórios */
+  /* 30%: marinho do logo, medido. A Torre, os títulos e o rodapé. */
+  --color-navy: #0c035b; /* oklch(0.224 0.140 270.9) */
+  /* 10%: o complementar da marca. O âmbar do logo está a 165° do marinho: já é o destaque. Só em botões, filetes e
+     marcadores. NUNCA como texto sobre fundo claro (1,7:1); texto marinho sobre ele tem 9,5:1. */
+  --color-amber: #fbae14; /* oklch(0.805 0.166 76.2) */
+  --color-amber-hover: #ffc247;
+  /* texto: a tinta (matiz 285°, análoga ao marinho) e a tinta suave (7,7:1 sobre o fundo: AAA) */
   --color-ink: #14122b;
   --color-ink-soft: #4d4b63;
-  --color-navy: #0c035b; /* medido no logo */
-  --color-navy-hover: #1b1180;
   --color-line: rgb(20 18 43 / 0.14);
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1); /* curva padrão do projeto (CLAUDE.md) */
 }
@@ -20,12 +28,20 @@
 :root {
   --gutter: clamp(1rem, 4vw, 3.5rem);
   --page-max: 90rem;
+  /* um só movimento de entrada (hero e revelação): quanto sobe, quanto desliza, quanto dura, intervalo entre itens */
+  --enter-rise: 24px;
+  --enter-slide: 48px;
+  --enter-duration: 900ms;
+  --enter-stagger: 80ms;
+  /* com "menos movimento": só opacidade */
+  --enter-fade-duration: 500ms;
+  --enter-fade-stagger: 40ms;
   color-scheme: light;
 }
 
 @layer base {
   html {
-    background-color: var(--color-porcelain);
+    background-color: var(--color-paper);
     color: var(--color-ink);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -40,12 +56,23 @@
 
   ::selection {
     background-color: var(--color-navy);
-    color: var(--color-porcelain);
+    color: var(--color-paper);
+  }
+
+  /* toque: sem o atraso do toque duplo e com um realce intencional (a tinta do marinho, translúcida) */
+  a,
+  button {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgb(12 3 91 / 0.12);
   }
 
   :focus-visible {
     outline: 2px solid var(--color-navy);
     outline-offset: 3px;
+  }
+  /* sobre o rodapé marinho o foco passa a âmbar (3:1 no mínimo) */
+  .on-navy :focus-visible {
+    outline-color: var(--color-amber);
   }
 }
 
@@ -58,6 +85,11 @@
     letter-spacing: -0.022em;
     line-height: 1.02;
     text-wrap: balance;
+    color: var(--color-navy);
+  }
+  /* título de seção (blocos e contato) */
+  .display-section {
+    font-size: clamp(2.25rem, 3.6vw, 3.75rem);
   }
 
   .eyebrow {
@@ -69,16 +101,18 @@
     color: var(--color-ink-soft);
   }
 
-  /* Ação principal: retângulo marinho, sem sombra. Hover só aqui, em elemento clicável. */
+  /* Ação principal: âmbar (o destaque) com texto marinho (9,5:1), sem sombra. Hover só aqui, em elemento clicável. */
   .button {
     display: inline-flex;
     align-items: center;
+    justify-content: center;
+    width: 100%; /* no celular o botão principal ocupa a largura; a partir de 640 px, a do texto */
     height: 3.25rem;
     padding-inline: 1.75rem;
     border-radius: 2px;
-    background-color: var(--color-navy);
-    color: var(--color-porcelain);
-    font-weight: 500;
+    background-color: var(--color-amber);
+    color: var(--color-navy);
+    font-weight: 600;
     letter-spacing: 0.01em;
     transition:
       background-color 200ms ease,
@@ -87,10 +121,17 @@
   .button:active {
     transform: scale(0.98);
   }
+  @media (min-width: 640px) {
+    .button {
+      width: auto;
+    }
+  }
 
   .text-link {
+    position: relative;
     align-items: center;
     gap: 0.6rem;
+    color: var(--color-navy);
     font-weight: 500;
     text-decoration-line: underline;
     text-decoration-thickness: 1px;
@@ -98,14 +139,38 @@
     text-decoration-color: var(--color-line);
     transition: text-decoration-color 200ms ease;
   }
+  /* área de toque de ~44 px de altura: o texto tem ~27 px */
+  .text-link::after {
+    content: "";
+    position: absolute;
+    inset: -0.6rem -0.3rem;
+  }
   .text-link__arrow {
     display: inline-block;
     transition: transform 200ms var(--ease-out-quint);
   }
 
+  /* Pular para o conteúdo: aparece só com o foco do teclado (sem animação: é ação de teclado) */
+  .skip-link {
+    position: absolute;
+    inset-inline-start: var(--gutter);
+    top: 0.75rem;
+    z-index: 30;
+    padding: 0.6rem 1rem;
+    border-radius: 2px;
+    background-color: var(--color-navy);
+    color: var(--color-paper);
+    font-weight: 500;
+    transform: translateY(-300%);
+  }
+  .skip-link:focus-visible {
+    transform: none;
+    outline-color: var(--color-amber);
+  }
+
   @media (hover: hover) and (pointer: fine) {
     .button:hover {
-      background-color: var(--color-navy-hover);
+      background-color: var(--color-amber-hover);
     }
     .text-link:hover {
       text-decoration-color: currentColor;
@@ -119,6 +184,30 @@
     outline: 2px solid var(--color-navy);
     outline-offset: 3px;
     border-radius: 2px;
+  }
+
+  /* Retrato provisório (Sócios): iniciais na serifa dos títulos sobre o neutro tingido. Sem foto, sem rosto falso. */
+  .portrait {
+    position: relative;
+    display: grid;
+    place-items: center;
+    aspect-ratio: 4 / 5;
+    border-radius: 2px;
+    background-color: var(--color-paper-deep);
+  }
+  .portrait__initials {
+    font-size: clamp(4rem, 8vw, 7rem);
+    line-height: 1;
+    letter-spacing: 0.02em;
+  }
+  .portrait::after {
+    content: "";
+    position: absolute;
+    inset-inline-start: 1.25rem;
+    bottom: 1.25rem;
+    width: 3rem;
+    height: 2px;
+    background-color: var(--color-amber);
   }
 
   /* Assinatura: a Torre 3D sobre o nome, nas proporções medidas no logo original. */
@@ -184,33 +273,38 @@
   display: block;
 }
 
-/* ------------------------------------------------------------------ hero: entrada em CSS puro, no carregamento */
+/* ------------------------------------------------------------------ um só movimento de entrada
+   O texto acompanha o movimento da cena. Desktop (≥ 64rem = 1024 px, o lg do Tailwind): entra do lado em que está,
+   em direção ao centro,
+   no mesmo sentido em que a Torre chega (câmera panorâmica). Abaixo disso (celular e tablet empilhado) a cena só
+   anda na vertical: o texto sobe. Os números ficam nos tokens --enter-* (em :root); só transform e opacity. */
 
+/* hero: CSS puro (keyframes no compositor): não espera o JavaScript e não atrasa o LCP. Texto à esquerda. */
 .hero-line {
   display: block;
-  overflow: clip;
-  padding-block-end: 0.12em;
-  margin-block-end: -0.12em;
 }
-.hero-line > span {
-  display: block;
-  animation: rise 1100ms var(--ease-out-quint) both;
-  animation-delay: calc(150ms + var(--i, 0) * 90ms);
-}
+.hero-line,
 .hero-fade {
-  animation: fade-up 1000ms var(--ease-out-quint) both;
-  animation-delay: calc(150ms + var(--i, 0) * 90ms);
+  animation: enter-up var(--enter-duration) var(--ease-out-quint) both;
+  animation-delay: calc(150ms + var(--i, 0) * var(--enter-stagger));
 }
-
-@keyframes rise {
-  from {
-    transform: translateY(110%);
+@media (min-width: 64rem) {
+  .hero-line,
+  .hero-fade {
+    animation-name: enter-from-left;
   }
 }
-@keyframes fade-up {
+
+@keyframes enter-up {
   from {
     opacity: 0;
-    transform: translateY(16px);
+    transform: translateY(var(--enter-rise));
+  }
+}
+@keyframes enter-from-left {
+  from {
+    opacity: 0;
+    transform: translateX(calc(var(--enter-slide) * -1));
   }
 }
 @keyframes fade {
@@ -219,16 +313,16 @@
   }
 }
 
-/* ------------------------------------------------------------------ revelação dos blocos (Reveal.tsx) */
-/* Só esconde com JavaScript ativo ([data-js], posto no <head>); sem JS, todo o texto aparece. */
-
-[data-js] [data-reveal] [data-reveal-item] {
+/* blocos (Reveal.tsx): só escondem com JavaScript ativo ([data-js], posto no <head>); sem JS, todo o texto aparece.
+   Os títulos entram linha a linha, sem máscara (com máscara, a linha que vem da esquerda mostraria o fim primeiro). */
+[data-js] [data-reveal] [data-reveal-item],
+[data-js] [data-reveal] .reveal-line {
   opacity: 0;
-  transform: translateY(24px);
+  transform: translateY(var(--enter-rise));
   transition:
-    opacity 900ms var(--ease-out-quint),
-    transform 900ms var(--ease-out-quint);
-  transition-delay: calc(var(--i, 0) * 80ms);
+    opacity var(--enter-duration) var(--ease-out-quint),
+    transform var(--enter-duration) var(--ease-out-quint);
+  transition-delay: calc(var(--i, 0) * var(--enter-stagger));
 }
 [data-js] [data-reveal] [data-reveal-title] {
   opacity: 0;
@@ -236,14 +330,21 @@
 [data-js] [data-reveal][data-split] [data-reveal-title] {
   opacity: 1;
 }
-[data-js] [data-reveal] .reveal-line-mask {
-  padding-block-end: 0.12em;
-  margin-block-end: -0.12em;
-}
-[data-js] [data-reveal] .reveal-line {
-  transform: translateY(110%);
-  transition: transform 900ms var(--ease-out-quint);
-  transition-delay: calc(var(--i, 0) * 80ms);
+
+/* Desktop com movimento normal: cada coluna esconde o texto do lado em que está (o atributo data-reveal-from da
+   coluna vira --enter-x, que os itens herdam; é fixo, não muda em tempo de execução). Com "menos movimento" nada
+   disto vale, e o texto só aparece. */
+@media (min-width: 64rem) and (prefers-reduced-motion: no-preference) {
+  [data-reveal-from="left"] {
+    --enter-x: calc(var(--enter-slide) * -1);
+  }
+  [data-reveal-from="right"] {
+    --enter-x: var(--enter-slide);
+  }
+  [data-js] [data-reveal] [data-reveal-item],
+  [data-js] [data-reveal] .reveal-line {
+    transform: translateX(var(--enter-x));
+  }
 }
 [data-js] [data-reveal][data-revealed] [data-reveal-item],
 [data-js] [data-reveal][data-revealed] .reveal-line {
@@ -254,19 +355,16 @@
 /* ------------------------------------------------------------------ menos movimento: só opacidade, mais curto */
 
 @media (prefers-reduced-motion: reduce) {
-  .hero-line > span,
+  .hero-line,
   .hero-fade {
     animation-name: fade;
-    animation-duration: 600ms;
+    animation-duration: var(--enter-fade-duration);
   }
   [data-js] [data-reveal] [data-reveal-item],
   [data-js] [data-reveal] .reveal-line {
     transform: none;
-    transition: opacity 500ms var(--ease-out-quint);
-    transition-delay: calc(var(--i, 0) * 40ms);
-  }
-  [data-js] [data-reveal] .reveal-line {
-    opacity: 0;
+    transition: opacity var(--enter-fade-duration) var(--ease-out-quint);
+    transition-delay: calc(var(--i, 0) * var(--enter-fade-stagger));
   }
   .torre-stage__inner {
     transition-duration: 600ms;

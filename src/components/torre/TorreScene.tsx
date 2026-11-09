@@ -31,7 +31,7 @@ const STUDIO_SIZE = 512; // em 256 a borda das luzes refletidas serrilha na laca
 
 /**
  * Estúdio fotográfico: softbox principal, filete de recorte à esquerda (os brilhos que o logo desenha),
- * contraluz, teto e o chão claro refletido.
+ * contraluz, teto e o chão claro refletido (da cor do fundo da página: --color-paper).
  */
 function studioScene() {
   const scene = new THREE.Scene();
@@ -50,7 +50,7 @@ function studioScene() {
   light(plane, 7, [-5, 1, 1.5], [0.5, 9, 1]); // filete de recorte à esquerda
   light(plane, 1.6, [5.5, 0, -2], [1.6, 7, 1]); // contraluz
   light(disc, 2.2, [0, 8, 0], [4, 4, 1]); // teto
-  light(plane, 0.8, [0, -6, 0], [14, 14, 1], "#f3f1ec"); // chão porcelana
+  light(plane, 0.8, [0, -6, 0], [14, 14, 1], "#f6f5f9"); // chão: o fundo da página (--color-paper)
   const dispose = () => {
     scene.traverse((obj) => {
       if (obj instanceof THREE.Mesh) (obj.material as THREE.Material).dispose();

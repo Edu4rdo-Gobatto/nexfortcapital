@@ -11,7 +11,10 @@ Saídas (geradas, não edite à mão):
     src/components/torre/geometry.ts  perfil de revolução da Torre + ameias (unidades 3D: 1 = 100 px do logo)
     src/components/torre/miolo.ts     urso e touro em vetor + degradê original medido
     src/components/brand/marks.ts     emblema 2D (silhueta, miolo, filetes) e o nome "NEXFORT CAPITAL" em vetor
-    src/app/icon.svg                  favicon: o emblema sobre porcelana
+    src/app/icon.svg                  favicon: o emblema sobre o fundo da página
+
+Miolo (urso e touro): se design/torre/miolo-redesenho.json existir, o desenho vem dele (variante "escolhida",
+ou --variante A|B|original). O JSON é gerado por design/torre/curar_miolo.py a partir de pontos-chave curados.
 
 Como funciona:
     - A silhueta, o miolo quente e os filetes claros são separados por cor (o desenho é de cores chapadas).
@@ -25,7 +28,10 @@ Como funciona:
 from __future__ import annotations
 
 import argparse
+import json
 import math
+import re
+import sys
 from pathlib import Path
 
 import numpy as np
@@ -42,6 +48,7 @@ ROOK_BOX = (462, 350, 618, 612)  # a Torre no logo de 1080 px
 WORD_BOX = (132, 614, 950, 686)  # "NEXFORT CAPITAL"
 UP = 8  # ampliação de trabalho
 UNIT = 100.0  # px do logo por unidade 3D
+ICON_BG = "#f6f5f9"  # fundo do favicon: o mesmo neutro tingido da página (--color-paper em globals.css)
 HEADER = "// Gerado por design/torre/extract_torre.py a partir do logo original. Não edite à mão.\n"
 
 
@@ -209,13 +216,24 @@ def simplify_closed(loop: np.ndarray, tol: float) -> np.ndarray:
     return rdp(ring, tol)[:-1]
 
 
+def signed_area(loop: np.ndarray) -> float:
+    """Área com sinal (fórmula do cadarço): positiva no sentido horário, com y para baixo."""
+    return 0.5 * float(np.dot(loop[:, 0], np.roll(loop[:, 1], -1)) - np.dot(loop[:, 1], np.roll(loop[:, 0], -1)))
+
+
+def bezier(P: np.ndarray, t: np.ndarray) -> np.ndarray:
+    """Pontos da Bézier cúbica de pontos de controle P (4×2) nos parâmetros t."""
+    t = np.asarray(t)[:, None]
+    return (1 - t) ** 3 * P[0] + 3 * (1 - t) ** 2 * t * P[1] + 3 * (1 - t) * t**2 * P[2] + t**3 * P[3]
+
+
 def contours_of(field: np.ndarray, sigma_px: float, tol_px: float, min_area_px: float = 4.0) -> list[np.ndarray]:
     """Contornos de um campo na resolução de origem (px), a partir da versão ampliada e alisada."""
     big = blur(upscale(field, UP), sigma_px * UP)
     loops = []
     for loop in marching_squares(big, 0.5):
         pts = (loop + 0.5) / UP - 0.5  # volta para coordenadas de pixel da origem
-        area = 0.5 * abs(np.dot(pts[:, 0], np.roll(pts[:, 1], 1)) - np.dot(pts[:, 1], np.roll(pts[:, 0], 1)))
+        area = abs(signed_area(pts))
         if area >= min_area_px:
             loops.append(simplify_closed(pts, tol_px))
     return loops
@@ -227,6 +245,91 @@ def to_path(loops: list[np.ndarray], dx: float = 0.0, dy: float = 0.0, scale: fl
         coords = [f"{(x + dx) * scale:.{nd}f} {(y + dy) * scale:.{nd}f}" for x, y in loop]
         parts.append("M" + "L".join(coords) + "Z")
     return "".join(parts)
+
+
+# ------------------------------------------------------------------ caminhos SVG (M, L, C, Q, Z, absolutos)
+# O redesenho do miolo (miolo-redesenho.json) é guardado como caminhos SVG em px do recorte da Torre.
+# Estas funções leem, transformam e achatam esses caminhos, para gerar o 3D, o emblema e o favicon.
+
+_PATH_TOKEN = re.compile(r"[MLCQZ]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?")
+_PATH_ARGS = {"M": 2, "L": 2, "C": 6, "Q": 4, "Z": 0}
+Segment = tuple[str, tuple[float, ...]]
+
+
+def parse_path(d: str) -> list[Segment]:
+    tokens = _PATH_TOKEN.findall(d)
+    segments: list[Segment] = []
+    i, cmd = 0, ""
+    while i < len(tokens):
+        if tokens[i] in _PATH_ARGS:
+            cmd = tokens[i]
+            i += 1
+            if cmd == "Z":
+                segments.append(("Z", ()))
+                continue
+        n = _PATH_ARGS[cmd]
+        segments.append((cmd, tuple(float(t) for t in tokens[i : i + n])))
+        i += n
+        if cmd == "M":
+            cmd = "L"  # pares seguintes a um M são retas (regra do SVG)
+    return segments
+
+
+def map_path(d: str, fn, nd: int = 2) -> str:
+    """Aplica fn(x, y) -> (x', y') a todos os pontos (incluindo os de controle) e reescreve o caminho."""
+    out = []
+    for cmd, args in parse_path(d):
+        pts = [fn(args[k], args[k + 1]) for k in range(0, len(args), 2)]
+        out.append(cmd + " ".join(f"{v:.{nd}f}" for p in pts for v in p))
+    return "".join(out)
+
+
+def flatten_path(d: str, step: float = 0.25) -> list[np.ndarray]:
+    """Contornos como polilinhas (curvas amostradas a cada ~step px)."""
+    loops: list[list[tuple[float, float]]] = []
+    cur: list[tuple[float, float]] = []
+    for cmd, a in parse_path(d):
+        if cmd == "M":
+            if cur:
+                loops.append(cur)
+            cur = [(a[0], a[1])]
+        elif cmd == "L":
+            cur.append((a[0], a[1]))
+        elif cmd in ("C", "Q"):
+            p0 = np.array(cur[-1])
+            ctrl = [p0] + [np.array(a[k : k + 2]) for k in range(0, len(a), 2)]
+            n = max(8, int(sum(np.hypot(*(ctrl[k + 1] - ctrl[k])) for k in range(len(ctrl) - 1)) / step))
+            ts = np.linspace(0, 1, n + 1)[1:]
+            if cmd == "C":
+                cur.extend((float(x), float(y)) for x, y in bezier(np.array(ctrl), ts))
+            else:
+                for t in ts:
+                    p = (1 - t) ** 2 * ctrl[0] + 2 * (1 - t) * t * ctrl[1] + t**2 * ctrl[2]
+                    cur.append((float(p[0]), float(p[1])))
+    if cur:
+        loops.append(cur)
+    return [np.array(lp) for lp in loops]
+
+
+REDESIGN_JSON = ROOT / "design" / "torre" / "miolo-redesenho.json"
+
+
+def load_redesign_data() -> dict | None:
+    """O JSON do redesenho do miolo, lido uma vez, ou None se ele não existir."""
+    return json.loads(REDESIGN_JSON.read_text(encoding="utf-8")) if REDESIGN_JSON.exists() else None
+
+
+def pick_variant(data: dict | None, variant: str | None) -> tuple[str, dict] | None:
+    """Variante do redesenho (A ou B), ou None para o traçado original.
+
+    variant: "A", "B", "original" ou None (usa a variante "escolhida" do JSON, se ele existir).
+    """
+    if variant == "original" or data is None:
+        return None
+    name = variant or data["escolhida"]
+    if name not in data["variantes"]:
+        raise SystemExit(f"variante '{name}' não existe em {REDESIGN_JSON.name} (há: {', '.join(data['variantes'])})")
+    return name, data["variantes"][name]
 
 
 # ------------------------------------------------------------------------------------------------ Torre
@@ -396,15 +499,34 @@ def fmt(v: float, nd: int = 4) -> str:
     return "0" if s in ("-0", "") else s
 
 
-def main() -> None:
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--check", type=Path, help="pasta para as imagens de conferência")
-    args = parser.parse_args()
-
+def load_logo() -> tuple[Image.Image, np.ndarray, dict[str, np.ndarray], np.ndarray]:
+    """O logo, o recorte da Torre, as máscaras de cor e o campo da silhueta."""
     logo = Image.open(SOURCE).convert("RGB")
     rgb = np.asarray(logo.crop(ROOK_BOX))
     masks = segment_logo(rgb)
-    field = silhouette_field(rgb, masks)
+    return logo, rgb, masks, silhouette_field(rgb, masks)
+
+
+def warm_trace(masks: dict[str, np.ndarray]) -> list[np.ndarray]:
+    """Traçado do miolo quente, estendido para fora da silhueta onde encosta nela (sem fresta azul na borda)."""
+    warm = masks["warm"]
+    grown = np.asarray(Image.fromarray(warm.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0
+    warm_ext = warm | (grown & ~masks["silhouette"])
+    return contours_of(blur(warm_ext.astype(np.float64), 0.3), 0.55, 0.06, min_area_px=6.0)
+
+
+def silhouette_trace(field: np.ndarray) -> list[np.ndarray]:
+    return contours_of(field, 0.35, 0.05)
+
+
+def main() -> None:
+    sys.stdout.reconfigure(encoding="utf-8")  # o console do Windows usa cp1252 e quebra com acentos
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--check", type=Path, help="pasta para as imagens de conferência")
+    parser.add_argument("--variante", help="miolo: uma variante de design/torre/miolo-redesenho.json (A, B...) ou 'original' (o traçado do logo); padrão: a 'escolhida' do JSON")
+    args = parser.parse_args()
+
+    logo, rgb, masks, field = load_logo()
 
     axis, ys, rs = measure_profile(field)
     top_y = float(np.mean([column_top(field, axis + dx) for dx in (-45, -15, 15, 45)]))  # topo das ameias
@@ -433,17 +555,28 @@ def main() -> None:
 
     # miolo: contorno do quente, estendido para fora da silhueta onde encosta nela (sem fresta azul na borda)
     warm = masks["warm"]
-    grown = np.asarray(Image.fromarray(warm.astype(np.uint8) * 255).filter(ImageFilter.MaxFilter(5))) > 0
-    warm_ext = warm | (grown & ~masks["silhouette"])
-    warm_field = blur(warm_ext.astype(np.float64), 0.3)
-    warm_loops = contours_of(warm_field, 0.55, 0.06, min_area_px=6.0)
+    warm_loops = warm_trace(masks)
     g_y0, g_y1, stops = warm_gradient(rgb, warm)
 
     # emblema 2D: silhueta, miolo (sem extensão) e filetes
-    sil_loops = contours_of(field, 0.35, 0.05)
+    sil_loops = silhouette_trace(field)
     miolo_loops = contours_of(blur(warm.astype(np.float64), 0.3), 0.55, 0.06, min_area_px=6.0)
     line_field = blur(masks["lines"].astype(np.float64), 0.25)
     line_loops = contours_of(line_field, 0.3, 0.05, min_area_px=1.5)
+
+    # caminho do miolo em px do recorte: o redesenho curado (JSON) ou, sem ele, o traçado original. O redesenho é
+    # um caminho só: o 3D usa como está (a borda passa 3 px da silhueta) e o 2D recorta pela silhueta (clip-path)
+    redesign_data = load_redesign_data()
+    variant_paths = {"original": to_path(miolo_loops)}  # para as imagens de conferência (--check): todas as variantes
+    if redesign_data:
+        variant_paths |= {k: v["d"] for k, v in redesign_data["variantes"].items()}
+    redesign = pick_variant(redesign_data, args.variante)
+    variant_name = redesign[0] if redesign else "original"
+    if redesign:
+        miolo_d3d = miolo_d2d = redesign[1]["d"]
+        warm_loops = miolo_loops = flatten_path(miolo_d3d)
+    else:
+        miolo_d3d, miolo_d2d = to_path(warm_loops), to_path(miolo_loops)
 
     # nome: luminância (preto sobre cinza-claro)
     word_rgb = np.asarray(logo.crop(WORD_BOX)).astype(np.float64)
@@ -493,13 +626,15 @@ export const TORRE_NAVY = "#{navy[0]:02x}{navy[1]:02x}{navy[2]:02x}";
     miolo_units = to_units(warm_loops)
     mins = np.vstack(miolo_units).min(axis=0)
     maxs = np.vstack(miolo_units).max(axis=0)
+    miolo_path_units = map_path(miolo_d3d, lambda x, y: ((x - axis) / UNIT, (y - mid_y) / UNIT), nd=4)
     miolo = HEADER + f"""
 /**
  * Urso e touro (a região quente do logo), em unidades 3D com y PARA BAIXO (coordenadas de canvas/SVG):
- * x centrado no eixo da Torre, y = 0 no centro vertical dela. Estendido um pouco para fora da silhueta
- * onde encosta nela, para a textura não deixar fresta azul na borda.
+ * x centrado no eixo da Torre, y = 0 no centro vertical dela. Variante do desenho: {variant_name}
+ * ("original" = traçado do logo; A e B = redesenho com linhas mais retas, em design/torre/miolo-redesenho.json).
+ * Estendido um pouco para fora da silhueta onde encosta nela, para a textura não deixar fresta azul na borda.
  */
-export const MIOLO_PATH = "{to_path(miolo_units, nd=4)}";
+export const MIOLO_PATH = "{miolo_path_units}";
 
 /** Caixa do caminho (x0, y0, x1, y1), em unidades, y para baixo. */
 export const MIOLO_BOUNDS = [{fmt(mins[0])}, {fmt(mins[1])}, {fmt(maxs[0])}, {fmt(maxs[1])}] as const;
@@ -523,7 +658,7 @@ export const MIOLO_GRADIENT = {{
 export const EMBLEM = {{
   viewBox: "0 0 {ex1 - ex0:.2f} {ey1 - ey0:.2f}",
   silhouette: "{to_path(sil_loops, -ex0, -ey0)}",
-  miolo: "{to_path(miolo_loops, -ex0, -ey0)}",
+  miolo: "{map_path(miolo_d2d, lambda x, y: (x - ex0, y - ey0), nd=2)}",
   lines: "{to_path(line_loops, -ex0, -ey0)}",
   /** Degradê do miolo em coordenadas do viewBox (y1 -> y2), de cima para baixo. */
   gradient: {{
@@ -543,30 +678,43 @@ export const WORDMARK = {{
     OUT_MARKS.parent.mkdir(parents=True, exist_ok=True)
     OUT_MARKS.write_text(marks, encoding="utf-8")
 
-    # --- icon.svg (favicon do App Router): o emblema num quadrado porcelana, visível em abas claras e escuras
+    # emblema em SVG (silhueta, miolo recortado por ela e filetes): o favicon e as imagens de conferência usam o mesmo gabarito
     ew, eh = ex1 - ex0, ey1 - ey0
+    navy_hex = f"#{navy[0]:02x}{navy[1]:02x}{navy[2]:02x}"
+
+    def emblem_svg(miolo_d: str, width: float, height: float, ox: float = 0.0, oy: float = 0.0, bg: str | None = None, lines: bool = True) -> str:
+        dx, dy = ox - ex0, oy - ey0
+        sil = to_path(sil_loops, dx, dy, nd=1)
+        stops_xml = "".join(f'<stop offset="{f:.3f}" stop-color="{c}"/>' for f, c in stops)
+        rect = f'<rect width="{width:.2f}" height="{height:.2f}" rx="{width * 0.18:.2f}" fill="{bg}"/>\n' if bg else ""
+        filetes = f'<path fill="#dcdcf0" fill-rule="evenodd" d="{to_path(line_loops, dx, dy, nd=1)}"/>\n' if lines else ""
+        return (
+            f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {width:.2f} {height:.2f}">\n{rect}'
+            f'<defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="{g_y0 + dy:.2f}" y2="{g_y1 + dy:.2f}">{stops_xml}</linearGradient>'
+            f'<clipPath id="c"><path clip-rule="evenodd" d="{sil}"/></clipPath></defs>\n'
+            f'<path fill="{navy_hex}" fill-rule="evenodd" d="{sil}"/>\n'
+            f'<path fill="url(#g)" clip-path="url(#c)" fill-rule="evenodd" d="{map_path(miolo_d, lambda x, y: (x + dx, y + dy), nd=1)}"/>\n'
+            f"{filetes}</svg>\n"
+        )
+
+    # --- icon.svg (favicon do App Router): o emblema num quadrado do fundo da página, visível em abas claras e escuras
     side = eh * 1.16
-    ox, oy = (side - ew) / 2, (side - eh) / 2
-    icon = f"""<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {side:.2f} {side:.2f}">
-<rect width="{side:.2f}" height="{side:.2f}" rx="{side * 0.18:.2f}" fill="#f3f1ec"/>
-<defs><linearGradient id="g" gradientUnits="userSpaceOnUse" x1="0" x2="0" y1="{g_y0 - ey0 + oy:.2f}" y2="{g_y1 - ey0 + oy:.2f}">{"".join(f'<stop offset="{f:.3f}" stop-color="{c}"/>' for f, c in stops)}</linearGradient></defs>
-<path fill="#{navy[0]:02x}{navy[1]:02x}{navy[2]:02x}" fill-rule="evenodd" d="{to_path(sil_loops, -ex0 + ox, -ey0 + oy, nd=1)}"/>
-<path fill="url(#g)" fill-rule="evenodd" d="{to_path(miolo_loops, -ex0 + ox, -ey0 + oy, nd=1)}"/>
-</svg>
-"""
-    OUT_ICON.write_text(icon, encoding="utf-8")
+    OUT_ICON.write_text(emblem_svg(miolo_d2d, side, side, (side - ew) / 2, (side - eh) / 2, bg=ICON_BG, lines=False), encoding="utf-8")
 
     print(f"eixo x={axis:.2f}px  topo={top_y:.2f}  piso={floor_y:.2f}  fundo={bottom_y:.2f}  coroa R={crown_r:.2f}px")
     print(f"ameias (meias-bordas px): {[round(v, 2) for v in layout['half_edges_px']]}")
     print(f"vãos/ameias (graus): {[(round(math.degrees(s), 1), round(math.degrees(e), 1)) for s, e in spans]}")
     print(f"ranhuras y(px): {[round(g[0], 1) for g in grooves]}")
     print("perfil redesenhado:\n  " + "\n  ".join(profile_report))
-    print(f"perfil: {len(lathe)} pontos  ·  miolo: {len(warm_loops)} contornos  ·  nome: {len(word_loops)} contornos")
+    print(f"perfil: {len(lathe)} pontos  ·  miolo ({variant_name}): {len(parse_path(miolo_d3d))} comandos  ·  nome: {len(word_loops)} contornos")
     print(f"degradê: {stops}  ·  azul {navy}")
     for p in (OUT_GEOMETRY, OUT_MIOLO, OUT_MARKS, OUT_ICON):
         print(f"  {p.relative_to(ROOT)}  {p.stat().st_size / 1024:.1f} KB")
 
     if args.check:
+        args.check.mkdir(parents=True, exist_ok=True)
+        for name, d in variant_paths.items():  # emblema 2D de cada variante do miolo (a prancha usa estes arquivos)
+            (args.check / f"emblema_{name}.svg").write_text(emblem_svg(d, ew, eh), encoding="utf-8")
         check(args.check, logo, axis, mid_y, lathe, spans, crown_r, floor_y, top_y, sil_loops, miolo_loops, line_loops, word_loops, stops, g_y0, g_y1, navy)
 
 
@@ -606,12 +754,17 @@ def check(out: Path, logo: Image.Image, axis, mid_y, lathe, spans, crown_r, floo
     def render(loops_list, colors, size, offset, scale):
         """Renderiza com a regra evenodd (XOR dos contornos), como o SVG final."""
         img = Image.new("RGB", size, (236, 233, 232))
-        for loops, color in zip(loops_list, colors):
+        silhouette = None
+        for k, (loops, color) in enumerate(zip(loops_list, colors)):
             acc = np.zeros((size[1], size[0]), dtype=bool)
             for loop in loops:
                 m = Image.new("L", size, 0)
                 ImageDraw.Draw(m).polygon([((x + offset[0] + 0.5) * scale, (y + offset[1] + 0.5) * scale) for x, y in loop], fill=255)
                 acc ^= np.asarray(m) > 127
+            if k == 0:
+                silhouette = acc
+            elif k == 1:
+                acc &= silhouette  # o miolo é recortado pela silhueta, como o clip-path do SVG
             img.paste(Image.new("RGB", size, color), mask=Image.fromarray((acc * 255).astype(np.uint8)))
         return img
 

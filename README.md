@@ -2,9 +2,9 @@
 
 Proposta de site para a **Nexfort Capital Consultoria** (Finanças Empresariais, Finanças Pessoais e Investimentos, Sinop - MT).
 
-## Estado atual: "Uma volta na Torre", fatia de prova
+## Estado atual: "Uma volta na Torre", Fase 3
 
-O site foi zerado em 08/11/2026 e está sendo reconstruído com uma ideia central: **a Torre do logo em 3D**, que gira só com a rolagem (uma volta completa na página) e termina de frente, formando o logo com o nome. Hoje existe a fatia de prova: hero, um bloco imagem/texto e a assinatura com contato. Ela aguarda aprovação antes dos demais blocos.
+O site foi zerado em 08/11/2026 e está sendo reconstruído com uma ideia central: **a Torre do logo em 3D**, que gira só com a rolagem e termina de frente, formando o logo com o nome. Hoje a página tem o hero, seis blocos imagem/texto (Finanças Empresariais, Finanças Pessoais, Investimentos, Como trabalhamos, Programas e Sócios) e a assinatura com contato. A Torre tem o desenho nas duas faces e descansa sempre virada para o texto (~3 voltas na página); o texto entra pelo lado no desktop e sobe no celular. As decisões de marca da Fase 3 (paleta, miolo, tipografia) estão na prancha: `design/prancha/index.html`.
 
 > **Descartado:** a abertura em que o touro e o urso correm e se chocam. Ela não será usada nem retomada.
 
@@ -16,10 +16,13 @@ Contexto, decisões, referências e próximos passos: **`MEMORIA_DO_PROJETO.md`*
 | --- | --- |
 | `src/app/` | `layout.tsx` (fontes, metadados, `noindex`), `page.tsx` (a página), `globals.css` (tokens, tipografia, revelação), `icon.svg` (gerado) |
 | `src/components/torre/` | A Torre 3D: palco fixo, cena (R3F), geometria, coreografia da rolagem e os dados gerados do logo |
-| `src/components/sections/` | Hero, bloco imagem/texto, assinatura, revelação do texto, âncoras da Torre, cabeçalho e rodapé |
+| `src/components/sections/` | Hero, bloco imagem/texto (um componente, variações por dados), assinatura, revelação do texto, âncoras da Torre, cabeçalho e rodapé |
 | `src/components/brand/` | Emblema e nome "NEXFORT CAPITAL" em SVG, traçados do logo |
 | `src/content/nexfort.ts` | Todo o texto do site, com a origem de cada trecho (perfis públicos ou rascunho a validar) |
-| `design/torre/extract_torre.py` | Extrai do logo original o perfil da Torre, as ameias, o urso e o touro, o emblema, o nome e o favicon |
+| `design/torre/extract_torre.py` | Extrai do logo original o perfil da Torre, as ameias, o urso e o touro, o emblema, o nome e o favicon. O miolo vem de `miolo-redesenho.json` (`--variante A\|B\|original`) |
+| `design/torre/curar_miolo.py` | Gera `miolo-redesenho.json`: o redesenho do urso e do touro (linhas mais retas) a partir de pontos-chave curados à mão |
+| `design/prancha/` | Prancha de decisões da Fase 3 (HTML local, uso interno: traz a marca de um terceiro) e as imagens dela |
+| `design/qa/` | Roteiros de verificação com Playwright (capturas, orçamento de desenho, revelação, reservas, vídeo): ver `design/qa/README.md` |
 | `design/referencias/logo-nexfort-original.png` | Logo original do cliente, 1080 px: matéria-prima do script acima. Não é servido pelo site |
 | `MEMORIA_DO_PROJETO.md` | Memória do projeto: contexto, histórico, decisões e direção |
 | `CLAUDE.md` / `AGENTS.md` | Regras de engenharia e motion para a IA |
@@ -36,7 +39,8 @@ A versão anterior inteira continua no histórico do Git (último commit dela: `
 - **GSAP 3.15** (`@gsap/react`, ScrollTrigger, SplitText) + **Lenis** (rolagem com inércia)
 - Instaladas e ainda sem uso: **Motion 14** (`motion/react`), **next-view-transitions**
 
-Para regenerar os dados do logo: `python design/torre/extract_torre.py` (requer `numpy` e `Pillow`; `--check PASTA` grava imagens de conferência).
+Para regenerar os dados do logo: `python design/torre/extract_torre.py` (requer `numpy` e `Pillow`; `--check PASTA` grava imagens de conferência e o emblema de cada variante do miolo).
+Para ajustar o desenho do urso e do touro: pontos-chave em `design/torre/curar_miolo.py`, depois `python design/torre/curar_miolo.py` e o comando acima.
 
 ## Comandos
 

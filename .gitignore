@@ -39,3 +39,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# QA (capturas, vídeos e medições de design/qa/)
+/design/qa/saida/

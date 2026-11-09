@@ -1,0 +1,186 @@
+{
+  "versao": 1,
+  "unidade": "px do recorte da Torre (ROOK_BOX de extract_torre.py), y para baixo; caminho SVG absoluto (M, L, C, Z)",
+  "escolhida": "A",
+  "nota": "Redesenho autorizado pelo autor em 08/11/2026 (urso e touro 'tortos'): altera de leve o desenho do logo. A borda direita e a base do miolo passam 3 px para fora da silhueta de propósito: o emblema 2D e o favicon recortam pela silhueta (sem fresta azul) e, no 3D, o limbo esmaece para o azul. Para trocar de variante, mude 'escolhida' e rode python design/torre/extract_torre.py (ou use --variante A|B|original).",
+  "variantes": {
+    "A": {
+      "nome": "Redesenho A: retas onde a forma é reta, curvas deliberadas só onde ela é curva",
+      "descricao": "Queixo, focinho, bochecha, nariz e a linha do pescoço do touro são retas. Ficam curvos, e suaves, só a orelha, a testa, a divisa urso/touro, o chifre e a mancha vermelha da base.",
+      "desvio_max_px": 1.51,
+      "iou_regiao_quente": 0.9713,
+      "pontos_chave": {
+        "orelha_topo": [
+          50.4,
+          137.5
+        ],
+        "coroa_topo": [
+          88.0,
+          127.5
+        ],
+        "coroa_dir": [
+          112.8,
+          132.3
+        ],
+        "coroa_fim": [
+          118.8,
+          134.0
+        ],
+        "mancha_esq": [
+          64.1,
+          255.3
+        ],
+        "mancha_curva": [
+          106.6,
+          240.4
+        ],
+        "pescoco_base": [
+          116.3,
+          228.0
+        ],
+        "pescoco_topo": [
+          108.2,
+          198.0
+        ],
+        "junta_baixo": [
+          105.2,
+          196.1
+        ],
+        "junta_cima": [
+          105.2,
+          194.3
+        ],
+        "chifre_ponta": [
+          119.5,
+          175.1
+        ],
+        "vale": [
+          104.0,
+          185.6
+        ],
+        "cocuruto": [
+          84.0,
+          179.4
+        ],
+        "queixo_fim": [
+          54.2,
+          187.4
+        ],
+        "queixo_ini": [
+          39.8,
+          185.2
+        ],
+        "focinho_baixo": [
+          34.0,
+          181.6
+        ],
+        "focinho_topo": [
+          33.6,
+          178.8
+        ],
+        "nariz": [
+          40.2,
+          169.0
+        ],
+        "bochecha": [
+          40.0,
+          156.0
+        ],
+        "orelha_baixo": [
+          48.9,
+          145.3
+        ]
+      },
+      "d": "M50.4 137.5C65.5 132.3 70.6 127.5 88.0 127.5C96.8 127.5 104.7 129.6 112.8 132.3L118.8 134.0L120.7 144.0L122.7 154.0L125.6 164.0L131.9 174.0L131.9 184.0L135.9 194.0L139.7 204.0L137.1 214.0L143.3 224.0L144.1 232.0L144.1 240.0L138.1 246.4L130.1 249.1L122.1 251.1L114.1 252.8L106.1 254.4L98.1 255.3L90.1 255.9L82.1 256.6L74.1 256.6L64.1 255.3C68.6 239.9 91.6 236.1 106.6 240.4C115.0 239.1 115.2 235.9 116.3 228.0L108.2 198.0L105.2 196.1L105.2 194.3C113.6 192.0 122.7 185.5 119.5 175.1C117.1 181.6 109.9 184.0 104.0 185.6C98.2 187.0 88.9 179.4 84.0 179.4C71.4 179.4 65.0 182.2 54.2 187.4L39.8 185.2L34.0 181.6L33.6 178.8L40.2 169.0L40.0 156.0L48.9 145.3C51.0 143.2 43.5 140.3 50.4 137.5Z"
+    },
+    "B": {
+      "nome": "Redesenho B: facetado, só retas",
+      "descricao": "Todos os contornos em segmentos retos (RDP de ~1,7 px sobre as mesmas arestas): leitura de entalhe.",
+      "desvio_max_px": 1.6,
+      "iou_regiao_quente": 0.9624,
+      "pontos_chave": {
+        "orelha_topo": [
+          50.4,
+          137.5
+        ],
+        "coroa_topo": [
+          88.0,
+          127.5
+        ],
+        "coroa_dir": [
+          112.8,
+          132.3
+        ],
+        "coroa_fim": [
+          118.8,
+          134.0
+        ],
+        "mancha_esq": [
+          64.1,
+          255.3
+        ],
+        "mancha_curva": [
+          106.6,
+          240.4
+        ],
+        "pescoco_base": [
+          116.3,
+          228.0
+        ],
+        "pescoco_topo": [
+          108.2,
+          198.0
+        ],
+        "junta_baixo": [
+          105.2,
+          196.1
+        ],
+        "junta_cima": [
+          105.2,
+          194.3
+        ],
+        "chifre_ponta": [
+          119.5,
+          175.1
+        ],
+        "vale": [
+          104.0,
+          185.6
+        ],
+        "cocuruto": [
+          84.0,
+          179.4
+        ],
+        "queixo_fim": [
+          54.2,
+          187.4
+        ],
+        "queixo_ini": [
+          39.8,
+          185.2
+        ],
+        "focinho_baixo": [
+          34.0,
+          181.6
+        ],
+        "focinho_topo": [
+          33.6,
+          178.8
+        ],
+        "nariz": [
+          40.2,
+          169.0
+        ],
+        "bochecha": [
+          40.0,
+          156.0
+        ],
+        "orelha_baixo": [
+          48.9,
+          145.3
+        ]
+      },
+      "d": "M50.4 137.5L77.6 127.5L88.0 127.5L112.8 132.3L118.8 134.0L120.7 144.0L122.7 154.0L125.6 164.0L131.9 174.0L131.9 184.0L135.9 194.0L139.7 204.0L137.1 214.0L143.3 224.0L144.1 232.0L144.1 240.0L138.1 246.4L130.1 249.1L122.1 251.1L114.1 252.8L106.1 254.4L98.1 255.3L90.1 255.9L82.1 256.6L74.1 256.6L64.1 255.3L65.8 249.8L82.1 239.6L106.6 240.4L113.3 238.1L116.3 228.0L108.2 198.0L105.2 196.1L105.2 194.3L117.2 187.2L119.5 175.1L113.2 182.2L104.0 185.6L84.0 179.4L66.2 181.6L54.2 187.4L39.8 185.2L34.0 181.6L33.6 178.8L40.2 169.0L40.0 156.0L48.9 145.3L47.6 140.2L50.4 137.5Z"
+    }
+  }
+}

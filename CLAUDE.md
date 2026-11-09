@@ -1,7 +1,7 @@
 @AGENTS.md
 
 # Estado do projeto (leia antes de propor qualquer coisa)
-- O site foi zerado em 08/11/2026 e está sendo reconstruído na direção **"Uma volta na Torre"**: a Torre do logo em 3D, girando só com a rolagem. Hoje existe a fatia de prova (hero, um bloco e a assinatura). Contexto, decisões e próximos passos estão em `MEMORIA_DO_PROJETO.md`.
+- O site foi zerado em 08/11/2026 e está sendo reconstruído na direção **"Uma volta na Torre"**: a Torre do logo em 3D, girando só com a rolagem. Hoje existe a fatia de prova (hero, um bloco e a assinatura). Contexto, decisões e próximos passos estão em `MEMORIA_DO_PROJETO.md`; a próxima etapa está especificada em `PROMPT_FASE_3.md`.
 - **Descartado: a animação do touro e do urso correndo e se chocando** (abertura em rolagem / vídeo do Google Flow). Não a use, não a recrie e não a sugira.
 - Nada da versão anterior (layout, seções, identidade visual) é modelo a seguir.
 - A Torre 3D, o emblema e o nome vêm do logo original (`design/referencias/logo-nexfort-original.png`) via `design/torre/extract_torre.py`. Os arquivos gerados (`geometry.ts`, `miolo.ts`, `marks.ts`, `icon.svg`) não se editam à mão.

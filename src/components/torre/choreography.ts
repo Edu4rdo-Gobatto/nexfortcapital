@@ -3,9 +3,11 @@
  * calcular o alvo sem puxar o 3D para o pacote principal; a cena só lê o "rig".
  *
  * Âncoras: cada seção tem um espaço vazio [data-torre-anchor] onde a Torre deve estar. Em "descanso"
- * (a seção centralizada na tela; o hero no topo da página) a Torre ocupa a âncora. Entre dois descansos
- * ela viaja com power3.inOut. A rotação é linear na rolagem: uma volta completa, de TURN_START (pose 3/4
- * virada para o texto) até TURN_END (de frente, o logo), como um indicador de leitura.
+ * (a seção centralizada na tela; o hero no topo da página) a Torre ocupa a âncora, sempre com o desenho
+ * (frente ou verso) virado para o texto: 35° para o lado do texto. Entre dois descansos ela viaja, e gira,
+ * com a mesma curva (power3.inOut): o giro só avança, ~3 voltas na página, e termina de frente (o logo).
+ * Cada âncora declara data-torre-face ("frente" | "verso") e data-torre-facing ("esquerda" | "direita" |
+ * "centro"), o lado do texto; [data-torre-hidden] marca o descanso em que a Torre sai de cena (Sócios).
  */
 
 /** Câmera fixa: lente longa, como foto de produto. Quase sem distorção, a vista frontal bate com o logo. */
@@ -17,10 +19,10 @@ export function worldPerPx(vh: number) {
 }
 
 const DEG = Math.PI / 180;
-/** Pose do hero: 3/4, com a frente virada para a esquerda (para o título). */
-export const TURN_START = -35 * DEG;
-/** Fim da página: uma volta completa, de frente. */
-export const TURN_END = 360 * DEG;
+/** Quanto a face fica virada para o lado do texto (3/4): lê o desenho e ainda mostra o volume. */
+const FACING_ANGLE = 35 * DEG;
+export type Face = "frente" | "verso";
+export type Facing = "esquerda" | "direita" | "centro";
 
 export type Rest = {
   /** rolagem em que a Torre descansa nesta âncora */
@@ -33,6 +35,10 @@ export type Rest = {
   elev: number;
   /** sombra de contato (0..1): some na assinatura, onde a Torre vira logo */
   shadow: number;
+  /** giro (rad) neste descanso: a face virada para o texto; só cresce de um descanso para o seguinte */
+  theta: number;
+  /** 0 = fora de cena (Sócios), 1 = visível */
+  opacity: number;
 };
 
 export type Pose = {
@@ -59,10 +65,33 @@ export type PoseOptions = {
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
 
+/**
+ * Giro (rad) em que a face fica virada para o lado do texto. A normal da frente é (sen θ, 0, cos θ) e a do
+ * verso é (−sen θ, 0, −cos θ): frente à esquerda = −35°, à direita = +35°; verso à direita = 215°, à esquerda
+ * = 145°. De frente, sem lado ("centro"): 0° (frente) ou 180° (verso).
+ */
+function faceAngle(face: Face, facing: Facing) {
+  const side = facing === "esquerda" ? -FACING_ANGLE : facing === "direita" ? FACING_ANGLE : 0;
+  return side + (face === "verso" ? Math.PI : 0);
+}
+
+/** Giros dos descansos: cada um é o equivalente (mod 360°) do ângulo alvo logo à frente do anterior. */
+function unwrapAngles(targets: number[]) {
+  const turn = 2 * Math.PI;
+  const out: number[] = [];
+  targets.forEach((target, i) => {
+    let theta = target;
+    if (i > 0) theta += turn * Math.ceil((out[i - 1] - target) / turn - 1e-6); // iguais: fica no lugar, não ganha uma volta
+    out.push(theta);
+  });
+  return out;
+}
+
 /** Mede as âncoras (na ordem do documento) e devolve os descansos. */
 export function measureRests(anchors: HTMLElement[], vh: number, maxScroll: number): Rest[] {
   const sy = window.scrollY;
   const rests: Rest[] = [];
+  const angles: number[] = []; // o ângulo alvo de cada âncora, antes de desenrolar as voltas
   anchors.forEach((el, i) => {
     const section = el.closest<HTMLElement>("[data-torre-section]") ?? el;
     const sr = section.getBoundingClientRect();
@@ -74,6 +103,10 @@ export function measureRests(anchors: HTMLElement[], vh: number, maxScroll: numb
     let s = i === 0 ? 0 : clamp(Math.min(sectionCenter - vh / 2, anchorTop - vh * 0.08), 0, maxScroll);
     const prev = rests[rests.length - 1];
     if (prev && s <= prev.s) s = prev.s + 1; // descansos sempre crescentes
+    const hidden = el.dataset.torreHidden !== undefined;
+    const face = (el.dataset.torreFace as Face | undefined) ?? "frente";
+    const facing = (el.dataset.torreFacing as Facing | undefined) ?? "esquerda";
+    angles.push(faceAngle(face, facing));
     rests.push({
       s,
       cx: ar.left + ar.width / 2,
@@ -81,22 +114,26 @@ export function measureRests(anchors: HTMLElement[], vh: number, maxScroll: numb
       h: ar.height * Number(el.dataset.torreFill ?? 1),
       elev: Number(el.dataset.torreElev ?? 6) * DEG,
       shadow: Number(el.dataset.torreShadow ?? 1),
+      theta: 0,
+      opacity: hidden ? 0 : 1,
     });
   });
+
+  // giros crescentes: todo descanso, também o de fora de cena (a Torre segue girando enquanto esmaece), é o
+  // equivalente do ângulo alvo logo à frente do anterior
+  unwrapAngles(angles).forEach((theta, i) => (rests[i].theta = theta));
   return rests;
 }
 
 /** Pose da Torre para a rolagem s. */
 export function poseAt(s: number, rests: Rest[], opts: PoseOptions): Pose {
   const last = rests.length - 1;
-  const sEnd = Math.max(1, rests[last].s);
-  const rotAt = (x: number) => TURN_START + (TURN_END - TURN_START) * clamp(x / sEnd, 0, 1);
-  const at = (r: Rest, rot: number, opacity = 1): Pose => ({ cx: r.cx, cy: r.cy, h: r.h, rot, elev: r.elev, shadow: r.shadow, opacity });
+  const at = (r: Rest, opacity = 1): Pose => ({ cx: r.cx, cy: r.cy, h: r.h, rot: r.theta, elev: r.elev, shadow: r.shadow, opacity: opacity * r.opacity });
 
-  if (s <= rests[0].s) return at(rests[0], opts.reduce ? rotAt(rests[0].s) : rotAt(s));
+  if (s <= rests[0].s) return at(rests[0]);
   if (s >= rests[last].s) {
     // depois do último descanso a Torre acompanha o conteúdo (o logo montado sobe junto com a página)
-    const pose = at(rests[last], TURN_END);
+    const pose = at(rests[last]);
     pose.cy -= s - rests[last].s;
     return pose;
   }
@@ -108,21 +145,22 @@ export function poseAt(s: number, rests: Rest[], opts: PoseOptions): Pose {
   const p = clamp((s - a.s) / (b.s - a.s), 0, 1);
 
   if (opts.reduce) {
-    // sem movimento: some no meio do caminho e reaparece já na próxima âncora
+    // sem movimento: some no meio do caminho e reaparece já na próxima âncora, no giro dela
     const r = p < 0.5 ? a : b;
-    return at(r, rotAt(r.s), clamp(Math.abs(1 - 2 * p) * 1.25 - 0.25, 0, 1));
+    return at(r, clamp(Math.abs(1 - 2 * p) * 1.25 - 0.25, 0, 1));
   }
 
+  // posição, giro e escala andam juntos, na mesma curva: a Torre chega virada para o texto
   const e = opts.ease(p);
   const mid = Math.sin(Math.PI * p); // 0 nos descansos, 1 no meio da travessia
   return {
     cx: lerp(a.cx, b.cx, e),
     cy: lerp(a.cy, b.cy, e),
     h: lerp(a.h, b.h, e) * (1 - opts.shrink * mid),
-    rot: rotAt(s),
+    rot: lerp(a.theta, b.theta, e),
     elev: lerp(a.elev, b.elev, e),
     shadow: lerp(a.shadow, b.shadow, e),
-    opacity: 1 - opts.dip * mid,
+    opacity: lerp(a.opacity, b.opacity, e) * (1 - opts.dip * mid),
   };
 }
 
@@ -136,6 +174,8 @@ export type TorreRig = {
   intro: { light: number; spin: number };
   /** primeira pose: copia o alvo sem amortecer */
   snap: boolean;
+  /** sem amortecimento: a pose vai direto ao alvo (menos movimento: a Torre troca de lugar esmaecida, sem deslizar nem girar) */
+  instant: boolean;
   /** registrados pela cena quando ela monta */
   invalidate?: () => void;
   /** chamado pela cena quando os shaders estão compilados */
@@ -145,8 +185,8 @@ export type TorreRig = {
 };
 
 export function createRig(): TorreRig {
-  const zero: TorreTarget = { x: 0, y: 0, h: 1, rot: TURN_START, tilt: 0, shadow: 1 };
-  return { target: { ...zero }, current: { ...zero }, intro: { light: 0, spin: 0 }, snap: true };
+  const zero: TorreTarget = { x: 0, y: 0, h: 1, rot: 0, tilt: 0, shadow: 1 };
+  return { target: { ...zero }, current: { ...zero }, intro: { light: 0, spin: 0 }, snap: true, instant: false };
 }
 
 /*
@@ -161,11 +201,22 @@ export function ensureRig(holder: { current: TorreRig | null }) {
 }
 
 export function writeTarget(rig: TorreRig, values: TorreTarget) {
+  // Salto do alvo (âncora do cabeçalho, arrasto da barra de rolagem): a Torre é idêntica a cada 360°, então o giro
+  // atual troca de volta pelo equivalente e o amortecimento percorre no máximo meia volta, em vez de ~3 voltas em
+  // meio segundo. Só o alvo decide: um arremesso de roda, em que o atraso passa de 180°, não pode inverter o giro.
+  const turn = 2 * Math.PI;
+  const jump = values.rot - rig.target.rot;
+  if (Math.abs(jump) > Math.PI) rig.current.rot += Math.round(jump / turn) * turn;
   Object.assign(rig.target, values);
 }
 
 export function requestSnap(rig: TorreRig) {
   rig.snap = true;
+}
+
+/** Liga ou desliga o modo sem amortecimento (menos movimento): a escolha vale até a próxima mudança da preferência. */
+export function setInstant(rig: TorreRig, instant: boolean) {
+  rig.instant = instant;
 }
 
 /** A cena se registra no rig ao montar; devolve a função que a desregistra. */
@@ -191,7 +242,7 @@ const KEYS = ["x", "y", "h", "rot", "tilt", "shadow"] as const;
 /** Um quadro de amortecimento exponencial em direção ao alvo. Devolve true enquanto ainda se move. */
 export function stepRig(rig: TorreRig, delta: number, damping: number, eps = 1e-4) {
   const { target: t, current: c } = rig;
-  if (rig.snap) {
+  if (rig.snap || rig.instant) {
     Object.assign(c, t);
     rig.snap = false;
   }
