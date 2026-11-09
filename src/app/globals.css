@@ -1,1 +1,274 @@
 @import "tailwindcss";
+
+/* ------------------------------------------------------------------ tokens (direção: porcelana, tinta marinho) */
+
+@theme inline {
+  --font-display: var(--font-newsreader), "Times New Roman", serif;
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+}
+
+@theme {
+  --color-porcelain: #f3f1ec;
+  --color-ink: #14122b;
+  --color-ink-soft: #4d4b63;
+  --color-navy: #0c035b; /* medido no logo */
+  --color-navy-hover: #1b1180;
+  --color-line: rgb(20 18 43 / 0.14);
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1); /* curva padrão do projeto (CLAUDE.md) */
+}
+
+:root {
+  --gutter: clamp(1rem, 4vw, 3.5rem);
+  --page-max: 90rem;
+  color-scheme: light;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-porcelain);
+    color: var(--color-ink);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.6;
+  }
+
+  ::selection {
+    background-color: var(--color-navy);
+    color: var(--color-porcelain);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-navy);
+    outline-offset: 3px;
+  }
+}
+
+/* ------------------------------------------------------------------ tipografia e controles */
+
+@layer components {
+  .display {
+    font-family: var(--font-newsreader), "Times New Roman", serif;
+    font-weight: 400;
+    letter-spacing: -0.022em;
+    line-height: 1.02;
+    text-wrap: balance;
+  }
+
+  .eyebrow {
+    font-size: 0.75rem;
+    font-weight: 500;
+    letter-spacing: 0.2em;
+    line-height: 1.4;
+    text-transform: uppercase;
+    color: var(--color-ink-soft);
+  }
+
+  /* Ação principal: retângulo marinho, sem sombra. Hover só aqui, em elemento clicável. */
+  .button {
+    display: inline-flex;
+    align-items: center;
+    height: 3.25rem;
+    padding-inline: 1.75rem;
+    border-radius: 2px;
+    background-color: var(--color-navy);
+    color: var(--color-porcelain);
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    transition:
+      background-color 200ms ease,
+      transform 140ms var(--ease-out-quint);
+  }
+  .button:active {
+    transform: scale(0.98);
+  }
+
+  .text-link {
+    align-items: center;
+    gap: 0.6rem;
+    font-weight: 500;
+    text-decoration-line: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.35em;
+    text-decoration-color: var(--color-line);
+    transition: text-decoration-color 200ms ease;
+  }
+  .text-link__arrow {
+    display: inline-block;
+    transition: transform 200ms var(--ease-out-quint);
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .button:hover {
+      background-color: var(--color-navy-hover);
+    }
+    .text-link:hover {
+      text-decoration-color: currentColor;
+    }
+    .text-link:hover .text-link__arrow {
+      transform: translateX(3px);
+    }
+  }
+
+  .focus-ring:focus-visible {
+    outline: 2px solid var(--color-navy);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Assinatura: a Torre 3D sobre o nome, nas proporções medidas no logo original. */
+  .lockup {
+    --lockup-w: min(84vw, 54rem);
+    width: var(--lockup-w);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .lockup__torre {
+    width: 100%;
+    height: calc(var(--lockup-w) * 0.2992);
+  }
+  .lockup__name {
+    width: 100%;
+    margin-top: calc(var(--lockup-w) * 0.0209);
+  }
+  /* a linha de áreas ocupa a largura do nome, como no logo: uma linha só, justificada */
+  .lockup__areas {
+    width: 100%;
+    margin-top: calc(var(--lockup-w) * 0.0187);
+    font-family: var(--font-newsreader), "Times New Roman", serif;
+    font-size: calc(var(--lockup-w) * 0.0212);
+    letter-spacing: 0.12em;
+    line-height: 1;
+    text-transform: uppercase;
+    text-align: justify;
+    text-align-last: justify;
+    white-space: nowrap;
+  }
+  /* medido: em tela larga o texto natural ocupa 81% do nome nesse tamanho; letras pequenas rendem mais largas */
+  @media (min-width: 768px) {
+    .lockup__areas {
+      font-size: calc(var(--lockup-w) * 0.025);
+    }
+  }
+}
+
+/* ------------------------------------------------------------------ palco da Torre */
+
+.torre-stage {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+.torre-stage__inner {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transition: opacity 1400ms var(--ease-out-quint);
+}
+.torre-stage__inner[data-ready] {
+  opacity: 1;
+}
+
+/* Reserva 2D: só sem WebGL (o palco marca data-webgl="off") ou sem JavaScript (<noscript> no layout). */
+.torre-fallback {
+  display: none;
+}
+[data-webgl="off"] .torre-fallback {
+  display: block;
+}
+
+/* ------------------------------------------------------------------ hero: entrada em CSS puro, no carregamento */
+
+.hero-line {
+  display: block;
+  overflow: clip;
+  padding-block-end: 0.12em;
+  margin-block-end: -0.12em;
+}
+.hero-line > span {
+  display: block;
+  animation: rise 1100ms var(--ease-out-quint) both;
+  animation-delay: calc(150ms + var(--i, 0) * 90ms);
+}
+.hero-fade {
+  animation: fade-up 1000ms var(--ease-out-quint) both;
+  animation-delay: calc(150ms + var(--i, 0) * 90ms);
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(110%);
+  }
+}
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* ------------------------------------------------------------------ revelação dos blocos (Reveal.tsx) */
+/* Só esconde com JavaScript ativo ([data-js], posto no <head>); sem JS, todo o texto aparece. */
+
+[data-js] [data-reveal] [data-reveal-item] {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 900ms var(--ease-out-quint),
+    transform 900ms var(--ease-out-quint);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+[data-js] [data-reveal] [data-reveal-title] {
+  opacity: 0;
+}
+[data-js] [data-reveal][data-split] [data-reveal-title] {
+  opacity: 1;
+}
+[data-js] [data-reveal] .reveal-line-mask {
+  padding-block-end: 0.12em;
+  margin-block-end: -0.12em;
+}
+[data-js] [data-reveal] .reveal-line {
+  transform: translateY(110%);
+  transition: transform 900ms var(--ease-out-quint);
+  transition-delay: calc(var(--i, 0) * 80ms);
+}
+[data-js] [data-reveal][data-revealed] [data-reveal-item],
+[data-js] [data-reveal][data-revealed] .reveal-line {
+  opacity: 1;
+  transform: none;
+}
+
+/* ------------------------------------------------------------------ menos movimento: só opacidade, mais curto */
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-line > span,
+  .hero-fade {
+    animation-name: fade;
+    animation-duration: 600ms;
+  }
+  [data-js] [data-reveal] [data-reveal-item],
+  [data-js] [data-reveal] .reveal-line {
+    transform: none;
+    transition: opacity 500ms var(--ease-out-quint);
+    transition-delay: calc(var(--i, 0) * 40ms);
+  }
+  [data-js] [data-reveal] .reveal-line {
+    opacity: 0;
+  }
+  .torre-stage__inner {
+    transition-duration: 600ms;
+  }
+}
