@@ -168,8 +168,10 @@
     align-items: center;
     justify-content: center;
     width: 100%; /* no celular o botão principal ocupa a largura; a partir de 640 px, a do texto */
-    height: 3.25rem;
-    padding-inline: 1.75rem;
+    min-height: 3.25rem; /* altura mínima, não fixa: um texto longo quebra em duas linhas dentro do botão */
+    padding: 0.7rem 1.75rem;
+    line-height: 1.25;
+    text-align: center;
     border-radius: 2px;
     background-color: var(--color-amber);
     color: var(--color-navy);
@@ -508,8 +510,8 @@
   /* variações do botão: pequeno (cabeçalho) e marinho (sobre a faixa âmbar do contato) */
   .button--small {
     width: auto;
-    height: 2.5rem;
-    padding-inline: 1.1rem;
+    min-height: 2.5rem;
+    padding: 0.4rem 1.1rem;
     font-size: 0.875rem;
   }
   .button--navy {
@@ -715,9 +717,17 @@
 
 .torre-stage {
   position: fixed;
-  inset: 0;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: var(--stage-h, 100lvh); /* a altura da tela medida pelo palco (TorreStage) */
   z-index: 1; /* acima dos fundos e nichos das seções, abaixo do texto (.layer) */
   pointer-events: none;
+}
+/* Presa a uma âncora: o canvas deixa de ser fixo, fica sobre a âncora (o palco define o translate) e rola com a
+   página como qualquer imagem do bloco. */
+.torre-stage[data-docked] {
+  position: absolute;
 }
 
 /* A âncora é um contêiner de tamanho: o nicho e os nomes das etapas se medem pela altura dela (1cqh = 1%). */

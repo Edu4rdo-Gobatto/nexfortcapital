@@ -35,8 +35,10 @@ function hasWebGL() {
 const noSubscribe = () => () => {};
 
 /**
- * Palco da Torre: um canvas fixo entre os fundos das seções e o texto (camadas em globals.css). A rolagem decide onde a Torre está (âncoras
- * [data-torre-anchor] nas seções) e quanto ela já girou. Nada se mexe sozinho, fora a Chegada.
+ * Palco da Torre: um canvas do tamanho da tela, entre os fundos das seções e o texto (camadas em globals.css).
+ * A rolagem decide onde a Torre está (âncoras [data-torre-anchor] nas seções) e quanto ela já girou. O canvas
+ * fica fixo na tela enquanto a Torre viaja entre âncoras e, quando ela está presa a uma âncora, é posicionado
+ * sobre essa âncora e rola com a página (choreography.ts). Nada se mexe sozinho, fora a Chegada.
  */
 export function TorreStage({ children }: { children: ReactNode }) {
   const container = useRef<HTMLDivElement>(null);
@@ -64,15 +66,29 @@ export function TorreStage({ children }: { children: ReactNode }) {
         { always: "all", reduce: "(prefers-reduced-motion: reduce)", stacked: "(max-width: 63.99rem)" }, // 64rem = o lg do Tailwind, em rem como ele
         (ctx) => {
           const { reduce = false, stacked = false } = ctx.conditions ?? {};
-          setInstant(rig, reduce); // menos movimento: a pose troca de uma vez, com a Torre esmaecida
+          setInstant(rig, reduce); // menos movimento: a pose troca de uma vez
           let rests: Rest[] = [];
+          let viewport = { w: document.documentElement.clientWidth, h: window.innerHeight };
+          let origin = 0; // Y do documento em que o contêiner começa: o canvas preso é posicionado dentro dele
+          let dock: number | null | undefined; // onde o canvas está agora (undefined: ainda não aplicado)
 
           const apply = (scroll: number) => {
             if (!rests.length) return;
-            // desktop: recua e cruza no vão entre os textos; celular (empilhado): esmaece, o texto passa por cima
-            const pose = poseAt(scroll, rests, { reduce, ease, dip: stacked ? 0.88 : 0, shrink: stacked ? 0.15 : 0.4 });
-            const vw = window.innerWidth;
-            const vh = window.innerHeight;
+            // celular (empilhado) e menos movimento: sempre presa à âncora mais próxima; desktop: viaja entre as visíveis
+            const pose = poseAt(scroll, rests, { docked: stacked || reduce, reduce, ease, shrink: 0.4, vh: viewport.h });
+
+            if (pose.dock !== dock) {
+              // mudou de âncora, ou passou de presa a viajando: o canvas muda de lugar e a pose vai direto ao alvo
+              dock = pose.dock;
+              const el = stage.current;
+              if (el) {
+                el.toggleAttribute("data-docked", dock !== null);
+                el.style.transform = dock === null ? "" : `translate3d(0, ${Math.round(dock - origin)}px, 0)`;
+              }
+              requestSnap(rig);
+            }
+
+            const { w: vw, h: vh } = viewport;
             const k = worldPerPx(vh);
             const y = (vh / 2 - pose.cy) * k;
             writeTarget(rig, {
@@ -92,11 +108,18 @@ export function TorreStage({ children }: { children: ReactNode }) {
               labelOpacity = named;
               labels.forEach((label) => (label.style.opacity = named));
             }
-            rig.invalidate?.();
+            // presa e fora da tela (o canvas inteiro): não desenha; quando voltar, a pose vai direto ao alvo
+            if (pose.dock !== null && Math.abs(pose.dock - scroll) >= vh) requestSnap(rig);
+            else rig.invalidate?.();
           };
 
           const measure = () => {
-            rests = measureRests(anchors, window.innerHeight, ScrollTrigger.maxScroll(window));
+            viewport = { w: document.documentElement.clientWidth, h: window.innerHeight };
+            origin = (container.current?.getBoundingClientRect().top ?? 0) + window.scrollY;
+            // o canvas tem sempre a altura da tela medida aqui: as contas da pose e o desenho usam o mesmo número
+            stage.current?.style.setProperty("--stage-h", `${viewport.h}px`);
+            rests = measureRests(anchors, viewport.h, ScrollTrigger.maxScroll(window));
+            dock = undefined; // remedido: o lugar do canvas é reaplicado
             // o descanso (rolagem) de cada âncora fica no DOM como estado do app: os roteiros de QA leem daqui, não refazem a regra
             rests.forEach((rest, i) => (anchors[i].dataset.torreRest = String(Math.round(rest.s))));
           };
@@ -113,6 +136,12 @@ export function TorreStage({ children }: { children: ReactNode }) {
           measure();
           apply(trigger.scroll());
           requestSnap(rig);
+
+          // ao trocar de layout (ou de preferência de movimento) o canvas volta a ficar fixo; a nova medição decide de novo
+          return () => {
+            stage.current?.removeAttribute("data-docked");
+            if (stage.current) stage.current.style.transform = "";
+          };
         },
       );
     },
@@ -143,7 +172,9 @@ export function TorreStage({ children }: { children: ReactNode }) {
   }, [contextSafe]);
 
   return (
-    <div ref={container} className="relative">
+    // overflow-clip: preso a uma âncora, o canvas pode passar do começo ou do fim da página; cortado aqui, ele não
+    // aumenta a altura rolável (clip não cria área de rolagem nem afeta o cabeçalho fixo)
+    <div ref={container} className="relative overflow-clip">
       <div ref={stage} className="torre-stage" aria-hidden="true">
         <div ref={inner} className="torre-stage__inner">
           {webgl ? <TorreScene rigRef={rigRef} /> : null}

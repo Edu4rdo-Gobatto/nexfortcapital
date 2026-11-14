@@ -4,11 +4,18 @@
  *
  * Âncoras: cada seção tem um espaço vazio [data-torre-anchor] onde a Torre deve estar. Em "descanso"
  * (a seção centralizada na tela; o hero no topo da página) a Torre ocupa a âncora, sempre com o desenho
- * (frente ou verso) virado para o texto: 22° para o lado do texto. Entre dois descansos ela viaja, e gira,
- * com a mesma curva (power3.inOut): o giro só avança, ~3 voltas na página, e termina de frente (o logo).
- * Cada âncora declara data-torre-face ("frente" | "verso") e data-torre-facing ("esquerda" | "direita" |
- * "centro"), o lado do texto; [data-torre-hidden] marca o descanso em que a Torre sai de cena (diagnóstico e
- * Sócios); [data-torre-explode], o descanso em que ela se desmonta nas três partes do método.
+ * (frente ou verso) virado para o texto: 22° para o lado do texto. Cada âncora declara data-torre-face
+ * ("frente" | "verso") e data-torre-facing ("esquerda" | "direita" | "centro"), o lado do texto;
+ * [data-torre-hidden] marca o descanso em que a Torre sai de cena (sinais, diagnóstico, Sócios, dúvidas);
+ * [data-torre-explode], o descanso em que ela se desmonta nas três partes do método.
+ *
+ * Dois modos de estar na página:
+ *  - PRESA a uma âncora (`dock`): o canvas se centra na âncora e rola junto com a página, então a Torre fica
+ *    cravada no bloco, alinhada ao nicho, como uma imagem dele. É assim no celular (layout empilhado), com
+ *    "menos movimento" e, no desktop, ao lado de um descanso fora de cena: ela entra e sai com o bloco, inteira.
+ *  - VIAJANDO entre duas âncoras visíveis (só no desktop): canvas fixo na tela; posição, giro e escala andam
+ *    juntos na mesma curva (power3.inOut).
+ * O giro só avança com a rolagem e termina de frente (o logo).
  */
 
 /** Câmera fixa: lente longa, como foto de produto. Quase sem distorção, a vista frontal bate com o logo. */
@@ -50,6 +57,7 @@ export type Rest = {
 };
 
 export type Pose = {
+  /** centro (px) no canvas, que tem o tamanho da tela */
   cx: number;
   cy: number;
   h: number;
@@ -58,21 +66,32 @@ export type Pose = {
   shadow: number;
   opacity: number;
   explode: number;
+  /**
+   * Presa a uma âncora: Y do documento (px) em que o topo do canvas fica; ele então rola com a página e a Torre
+   * está sempre no meio dele. null: a Torre viaja entre âncoras e o canvas fica fixo na tela.
+   */
+  dock: number | null;
 };
 
 export type PoseOptions = {
-  /** prefers-reduced-motion: sem viagem nem giro; troca de lugar por esmaecimento */
+  /** layout empilhado (celular) ou "menos movimento": a Torre não viaja; fica sempre presa à âncora mais próxima */
+  docked: boolean;
+  /** prefers-reduced-motion: presa, sem girar com a rolagem e já desmontada onde se desmonta */
   reduce: boolean;
-  /** quanto a Torre esmaece no meio da travessia (layout empilhado do celular, texto passa por cima) */
-  dip: number;
   /** quanto a Torre recua (encolhe) no meio da travessia, para cruzar no vão entre os textos */
   shrink: number;
   /** curva da viagem entre âncoras */
   ease: (t: number) => number;
+  /** altura da tela (px): a do canvas */
+  vh: number;
 };
 
 const clamp = (v: number, a: number, b: number) => Math.min(b, Math.max(a, v));
 const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
+const smooth = (t: number) => t * t * (3 - 2 * t);
+
+/** Quanto a Torre gira, presa a uma âncora, a cada altura de tela rolada: só com a rolagem, e devagar. */
+const DOCKED_TURN = 30 * DEG;
 
 /**
  * Giro (rad) em que a face fica virada para o lado do texto. A normal da frente é (sen θ, 0, cos θ) e a do
@@ -135,27 +154,60 @@ export function measureRests(anchors: HTMLElement[], vh: number, maxScroll: numb
   return rests;
 }
 
-/** Pose da Torre para a rolagem s. */
-export function poseAt(s: number, rests: Rest[], opts: PoseOptions): Pose {
-  const last = rests.length - 1;
-  const at = (r: Rest, opacity = 1): Pose => ({
+/**
+ * A Torre presa à âncora do descanso r. O canvas se centra na âncora e rola junto com a página (`dock`): a
+ * Torre fica cravada no bloco sem depender do JavaScript para acompanhar o dedo (no celular a rolagem é do
+ * próprio navegador, e um canvas fixo reposicionado por script chegaria sempre atrasado). O giro avança
+ * devagar com a rolagem e passa pelo ângulo do descanso exatamente no descanso; onde a Torre se desmonta, ela
+ * só fica aberta perto do meio da tela.
+ */
+function dockedAt(r: Rest, s: number, opts: PoseOptions, opacity = 1): Pose {
+  const center = r.cy + r.s; // Y do centro da âncora no documento
+  const away = Math.abs(center - s - opts.vh / 2) / opts.vh; // distância do meio da tela, em alturas de tela
+  const open = opts.reduce ? 1 : 1 - smooth(clamp((away - 0.2) / 0.35, 0, 1));
+  return {
     cx: r.cx,
-    cy: r.cy,
+    cy: opts.vh / 2,
     h: r.h,
-    rot: r.theta,
+    rot: r.theta + (opts.reduce ? 0 : DOCKED_TURN * clamp((s - r.s) / opts.vh, -1.2, 1.2)),
     elev: r.elev,
     shadow: r.shadow,
     opacity: opacity * r.opacity,
-    explode: r.explode,
-  });
+    explode: r.explode * open,
+    dock: center - opts.vh / 2,
+  };
+}
 
-  if (s <= rests[0].s) return at(rests[0]);
-  if (s >= rests[last].s) {
-    // depois do último descanso a Torre acompanha o conteúdo (o logo montado sobe junto com a página)
-    const pose = at(rests[last]);
-    pose.cy -= s - rests[last].s;
-    return pose;
+/** Pose da Torre para a rolagem s. */
+export function poseAt(s: number, rests: Rest[], opts: PoseOptions): Pose {
+  const last = rests.length - 1;
+
+  if (opts.docked) {
+    // Celular (empilhado) e "menos movimento": a Torre não viaja. Fica presa à âncora visível mais próxima do meio
+    // da tela. No celular a troca de âncora acontece com as duas fora da tela; onde as duas ainda aparecem (tela
+    // larga com menos movimento), ela some numa e reaparece na outra: a opacidade zera no ponto da troca.
+    const middle = s + opts.vh / 2;
+    let best = -1;
+    let nearest = Infinity;
+    let second = Infinity;
+    rests.forEach((r, i) => {
+      if (!r.opacity) return;
+      const distance = Math.abs(r.cy + r.s - middle);
+      if (distance < nearest) {
+        second = nearest;
+        nearest = distance;
+        best = i;
+      } else if (distance < second) {
+        second = distance;
+      }
+    });
+    if (best < 0) return dockedAt(rests[0], s, opts, 0);
+    return dockedAt(rests[best], s, opts, clamp((second - nearest) / (0.25 * opts.vh), 0, 1));
   }
+
+  // antes do primeiro descanso e depois do último, a Torre é do bloco: sobe e desce com a página
+  if (s <= rests[0].s) return dockedAt(rests[0], s, opts);
+  if (s >= rests[last].s) return dockedAt(rests[last], s, opts);
 
   let i = 0;
   while (i < last - 1 && s > rests[i + 1].s) i++;
@@ -163,13 +215,14 @@ export function poseAt(s: number, rests: Rest[], opts: PoseOptions): Pose {
   const b = rests[i + 1];
   const p = clamp((s - a.s) / (b.s - a.s), 0, 1);
 
-  if (opts.reduce) {
-    // sem movimento: some no meio do caminho e reaparece já na próxima âncora, no giro dela
-    const r = p < 0.5 ? a : b;
-    return at(r, clamp(Math.abs(1 - 2 * p) * 1.25 - 0.25, 0, 1));
-  }
+  // Ao lado de um descanso fora de cena a Torre não viaja nem esmaece pelo caminho (ficava um fantasma cruzando a
+  // página): sai e entra presa ao seu bloco, inteira, junto com ele. O esmaecimento nas pontas só cobre a troca
+  // de âncora, que quase sempre acontece com a Torre já fora da tela.
+  if (!b.opacity) return dockedAt(a, s, opts, 1 - clamp((p - 0.85) / 0.15, 0, 1));
+  if (!a.opacity) return dockedAt(b, s, opts, clamp(p / 0.15, 0, 1));
 
-  // posição, giro e escala andam juntos, na mesma curva: a Torre chega virada para o texto
+  // Entre dois descansos visíveis ela viaja: posição, giro e escala andam juntos, na mesma curva, e a Torre
+  // chega virada para o texto. No meio do caminho recua, para cruzar no vão entre os textos.
   const e = opts.ease(p);
   const mid = Math.sin(Math.PI * p); // 0 nos descansos, 1 no meio da travessia
   return {
@@ -179,13 +232,10 @@ export function poseAt(s: number, rests: Rest[], opts: PoseOptions): Pose {
     rot: lerp(a.theta, b.theta, e),
     elev: lerp(a.elev, b.elev, e),
     shadow: lerp(a.shadow, b.shadow, e),
-    // ao sair de cena some depressa (antes da metade do caminho) e, ao voltar, só reaparece na chegada: não
-    // atravessa as seções vizinhas meio transparente
-    opacity:
-      lerp(a.opacity, b.opacity, opts.ease(b.opacity < a.opacity ? clamp(p / 0.45, 0, 1) : clamp((p - 0.55) / 0.45, 0, 1))) *
-      (1 - opts.dip * mid),
+    opacity: 1,
     // a Torre viaja fechada: abre só na chegada (segunda metade da travessia) e fecha antes de partir (primeira)
     explode: lerp(a.explode, b.explode, opts.ease(b.explode > a.explode ? clamp(2 * p - 1, 0, 1) : clamp(2 * p, 0, 1))),
+    dock: null,
   };
 }
 

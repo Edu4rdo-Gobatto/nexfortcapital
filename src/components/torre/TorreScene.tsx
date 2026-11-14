@@ -293,9 +293,14 @@ export default function TorreScene({ rigRef }: { rigRef: RigRef }) {
     <Canvas
       frameloop={frameloop}
       dpr={[1, maxDpr]}
+      // o canvas preso a uma âncora rola com a página: a posição dele na tela não interessa ao R3F (sem isto ele
+      // remediria o canvas a cada rolagem e o redesenharia à toa)
+      resize={{ scroll: false }}
       gl={{ antialias: true, alpha: true, powerPreference: "high-performance", toneMapping: THREE.NeutralToneMapping }}
       camera={{ fov: CAMERA.fov, near: 1, far: 100, position: [0, 0, CAMERA.z] }}
-      style={{ position: "absolute", inset: 0 }}
+      // pointerEvents: "none" — o R3F liga os toques no canvas por padrão. Como o canvas cobre a tela inteira e
+      // fica acima dos fundos das seções, sem isto ele recebe o dedo (e o clique) no lugar da página.
+      style={{ position: "absolute", inset: 0, pointerEvents: "none" }}
     >
       <KeyLight rigRef={rigRef} />
       <Rig rigRef={rigRef}>
