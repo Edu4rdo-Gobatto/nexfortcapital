@@ -4,10 +4,11 @@
  *
  * Âncoras: cada seção tem um espaço vazio [data-torre-anchor] onde a Torre deve estar. Em "descanso"
  * (a seção centralizada na tela; o hero no topo da página) a Torre ocupa a âncora, sempre com o desenho
- * (frente ou verso) virado para o texto: 35° para o lado do texto. Entre dois descansos ela viaja, e gira,
+ * (frente ou verso) virado para o texto: 22° para o lado do texto. Entre dois descansos ela viaja, e gira,
  * com a mesma curva (power3.inOut): o giro só avança, ~3 voltas na página, e termina de frente (o logo).
  * Cada âncora declara data-torre-face ("frente" | "verso") e data-torre-facing ("esquerda" | "direita" |
- * "centro"), o lado do texto; [data-torre-hidden] marca o descanso em que a Torre sai de cena (Sócios).
+ * "centro"), o lado do texto; [data-torre-hidden] marca o descanso em que a Torre sai de cena (diagnóstico e
+ * Sócios); [data-torre-explode], o descanso em que ela se desmonta nas três partes do método.
  */
 
 /** Câmera fixa: lente longa, como foto de produto. Quase sem distorção, a vista frontal bate com o logo. */
@@ -19,8 +20,13 @@ export function worldPerPx(vh: number) {
 }
 
 const DEG = Math.PI / 180;
-/** Quanto a face fica virada para o lado do texto (3/4): lê o desenho e ainda mostra o volume. */
-const FACING_ANGLE = 35 * DEG;
+/** Altura do cabeçalho fixo (px): a seção descansa centralizada na área que sobra abaixo dele. */
+const HEADER_PX = 72;
+/**
+ * Quanto a face fica virada para o lado do texto. Em 35° o desenho virava uma mancha: a projeção encurta e o
+ * focinho do urso some atrás do limbo. Em 22° o urso e o touro leem inteiros e a peça ainda mostra volume.
+ */
+const FACING_ANGLE = 22 * DEG;
 export type Face = "frente" | "verso";
 export type Facing = "esquerda" | "direita" | "centro";
 
@@ -39,6 +45,8 @@ export type Rest = {
   theta: number;
   /** 0 = fora de cena (Sócios), 1 = visível */
   opacity: number;
+  /** 1 = desmontada nas três partes do método (base, corpo, coroa); 0 = fechada, como no logo */
+  explode: number;
 };
 
 export type Pose = {
@@ -49,6 +57,7 @@ export type Pose = {
   elev: number;
   shadow: number;
   opacity: number;
+  explode: number;
 };
 
 export type PoseOptions = {
@@ -99,8 +108,8 @@ export function measureRests(anchors: HTMLElement[], vh: number, maxScroll: numb
     const sectionCenter = sr.top + sy + sr.height / 2;
     const anchorTop = ar.top + sy;
     // seção centralizada; mas se ela for mais alta que a tela (celular, Torre em cima do texto), o topo
-    // da âncora fica pelo menos 8% abaixo do topo da tela: a Torre nunca descansa cortada
-    let s = i === 0 ? 0 : clamp(Math.min(sectionCenter - vh / 2, anchorTop - vh * 0.08), 0, maxScroll);
+    // da âncora fica pelo menos 12% abaixo do topo da tela: a Torre nunca descansa cortada nem sob o cabeçalho fixo
+    let s = i === 0 ? 0 : clamp(Math.min(sectionCenter - (vh + HEADER_PX) / 2, anchorTop - vh * 0.12), 0, maxScroll);
     const prev = rests[rests.length - 1];
     if (prev && s <= prev.s) s = prev.s + 1; // descansos sempre crescentes
     const hidden = el.dataset.torreHidden !== undefined;
@@ -116,6 +125,7 @@ export function measureRests(anchors: HTMLElement[], vh: number, maxScroll: numb
       shadow: Number(el.dataset.torreShadow ?? 1),
       theta: 0,
       opacity: hidden ? 0 : 1,
+      explode: el.dataset.torreExplode !== undefined ? 1 : 0,
     });
   });
 
@@ -128,7 +138,16 @@ export function measureRests(anchors: HTMLElement[], vh: number, maxScroll: numb
 /** Pose da Torre para a rolagem s. */
 export function poseAt(s: number, rests: Rest[], opts: PoseOptions): Pose {
   const last = rests.length - 1;
-  const at = (r: Rest, opacity = 1): Pose => ({ cx: r.cx, cy: r.cy, h: r.h, rot: r.theta, elev: r.elev, shadow: r.shadow, opacity: opacity * r.opacity });
+  const at = (r: Rest, opacity = 1): Pose => ({
+    cx: r.cx,
+    cy: r.cy,
+    h: r.h,
+    rot: r.theta,
+    elev: r.elev,
+    shadow: r.shadow,
+    opacity: opacity * r.opacity,
+    explode: r.explode,
+  });
 
   if (s <= rests[0].s) return at(rests[0]);
   if (s >= rests[last].s) {
@@ -160,12 +179,18 @@ export function poseAt(s: number, rests: Rest[], opts: PoseOptions): Pose {
     rot: lerp(a.theta, b.theta, e),
     elev: lerp(a.elev, b.elev, e),
     shadow: lerp(a.shadow, b.shadow, e),
-    opacity: lerp(a.opacity, b.opacity, e) * (1 - opts.dip * mid),
+    // ao sair de cena some depressa (antes da metade do caminho) e, ao voltar, só reaparece na chegada: não
+    // atravessa as seções vizinhas meio transparente
+    opacity:
+      lerp(a.opacity, b.opacity, opts.ease(b.opacity < a.opacity ? clamp(p / 0.45, 0, 1) : clamp((p - 0.55) / 0.45, 0, 1))) *
+      (1 - opts.dip * mid),
+    // a Torre viaja fechada: abre só na chegada (segunda metade da travessia) e fecha antes de partir (primeira)
+    explode: lerp(a.explode, b.explode, opts.ease(b.explode > a.explode ? clamp(2 * p - 1, 0, 1) : clamp(2 * p, 0, 1))),
   };
 }
 
 /** Estado compartilhado entre o palco (escreve o alvo) e a cena (amortece e desenha). */
-export type TorreTarget = { x: number; y: number; h: number; rot: number; tilt: number; shadow: number };
+export type TorreTarget = { x: number; y: number; h: number; rot: number; tilt: number; shadow: number; explode: number };
 
 export type TorreRig = {
   target: TorreTarget;
@@ -185,7 +210,7 @@ export type TorreRig = {
 };
 
 export function createRig(): TorreRig {
-  const zero: TorreTarget = { x: 0, y: 0, h: 1, rot: 0, tilt: 0, shadow: 1 };
+  const zero: TorreTarget = { x: 0, y: 0, h: 1, rot: 0, tilt: 0, shadow: 1, explode: 0 };
   return { target: { ...zero }, current: { ...zero }, intro: { light: 0, spin: 0 }, snap: true, instant: false };
 }
 
@@ -237,7 +262,7 @@ export function onSceneReady(rig: TorreRig, handler: () => void) {
   };
 }
 
-const KEYS = ["x", "y", "h", "rot", "tilt", "shadow"] as const;
+const KEYS = ["x", "y", "h", "rot", "tilt", "shadow", "explode"] as const;
 
 /** Um quadro de amortecimento exponencial em direção ao alvo. Devolve true enquanto ainda se move. */
 export function stepRig(rig: TorreRig, delta: number, damping: number, eps = 1e-4) {

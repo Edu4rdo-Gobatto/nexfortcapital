@@ -47,5 +47,5 @@ export function SmoothScroll() {
     };
   }, [enabled]);
 
-  return enabled ? <ReactLenis root options={{ autoRaf: false, lerp: 0.1 }} ref={lenisRef} /> : null;
+  return enabled ? <ReactLenis root options={{ autoRaf: false, lerp: 0.1, anchors: true }} ref={lenisRef} /> : null;
 }

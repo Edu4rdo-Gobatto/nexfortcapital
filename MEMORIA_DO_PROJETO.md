@@ -1,8 +1,8 @@
 # Memória e decisões do projeto: Nexfort Capital
 
-Última atualização: 09/11/2026.
+Última atualização: 14/11/2026.
 
-> **Estado atual: Fase 3 executada (09/11/2026).** A direção é **"Uma volta na Torre"** (seção 3), com a Torre do logo em 3D. A página tem o hero, seis blocos imagem/texto e a assinatura; os quatro ajustes do autor sobre a fatia de prova foram feitos (seção 3.1) e as decisões de marca estão na prancha `design/prancha/index.html`. Falta a Fase 4 (acabamento) e a revisão final do movimento pelo autor (`/review-animations`).
+> **Estado atual: "A Torre é o método" (14/11/2026, seção 3.2), sobre a Fase 3 (09/11/2026).** A direção é **"Uma volta na Torre"** (seção 3), com a Torre do logo em 3D. A página tem o hero, a faixa do slogan, as frases de quem procura ajuda, seis blocos imagem/texto, o diagnóstico de 1 minuto, as dúvidas, a assinatura e o contato, com cor de verdade (seção 3.3). No bloco do método a Torre se desmonta em base, corpo e coroa (as três etapas do slogan) e o diagnóstico diz ao visitante em qual ele está. As mudanças de 14/11 estão no working tree, sem commit. Falta o acabamento (Lighthouse, Android real), a revisão do movimento pelo autor (`/review-animations`) e o material real da Nexfort.
 
 > **DESCARTADO: a animação do touro e do urso se chocando.** A abertura em rolagem (`BrandPrologue`), em que os dois animais correm, colidem, explodem em luz e formam a Torre, **não será mais usada**. Não a recrie, não a adapte e não a sugira de novo, nem como variação.
 
@@ -167,6 +167,39 @@ O giro entre descansos usa a mesma curva da viagem (`power3.inOut`). **Emenda la
 
 **Revisões feitas antes da entrega.** `/code-review` (nível `high`): 8 achados; aplicados 6 (giro de salto só no alvo, pose travada com "menos movimento", poses iguais não ganham volta, anéis do esmaecimento construídos uma vez, JSON lido uma vez, `parse_path` robusto); mantidos 2 de propósito ("Cargo a confirmar" visível em Sócios, pedido do prompt; área de toque dos links). `/simplify` (4 revisores em paralelo: reuso, simplificação, eficiência, altitude): aplicados o `ExternalLink` único, o `overflow-x: clip` único na `<main>`, os tokens `--enter-*` do movimento de entrada (uma fonte só para 24 px, 48 px, 900 ms e 80 ms), o ponto de quebra em `64rem` igual ao do Tailwind (CSS e `matchMedia`), o "fora de cena" como propriedade de primeira classe (`torre.hidden`), "menos movimento" como modo do rig, o `lib.mjs` e o `data-torre-rest` no QA, `load_logo`/`warm_trace`/`silhouette_trace`/`bezier`/`signed_area` comuns ao extrator e ao curador, o gabarito único do emblema SVG (que também corrigiu `fill-rule` onde era `clip-rule`), o curador preservando a variante `escolhida`, o desenho do nome e da silhueta definido uma vez em `<symbol>`/`<use>` (o documento caiu de 156 KB para 114 KB) e os títulos divididos pelo SplitText só quando a coluna está a uma tela de entrar (menos leitura de layout na hidratação). Auditoria de movimento: sem `ease-in`, `scale(0)`, `transition: all` nem animação de propriedade de layout; a duração do hero passou de 1000 para 900 ms (uma transição só). Verificador da `design-taste-frontend` em dois passes (1440, 820 e 390 px): 50 falhas no desktop no primeiro (68 somando as telas menores) e 48 (66) no segundo, depois das correções. O que sobra é premissa do kit dele em conflito com decisão do autor, e a do autor vale: `no-visual` (24; não reconhece a Torre fixa como o visual das seções), `effect-kind` e `effects-fit` (3D fora de tecnologia), `section-*`, `one-section`, `split-pair` e `container-edges` (120svh por bloco, texto centralizado na altura, margem de 56 px), `copy-headline`, `copy-headings` e `copy-fact` (o slogan é o h1), `street-number` e `phone-number` (dados públicos reais da empresa) e `shader-lint` (falso positivo: o `#include <common>` interno do three.js). Os pontos legítimos foram corrigidos e confirmados no segundo passe (`fold-cut` e `row-lines` foram a 0): botão do hero fora da dobra no celular, fotos dos sócios fora das linhas da grade, e a mesma ação com palavras diferentes no cabeçalho, no hero e no fecho ("Agendar uma conversa" nos três).
 
+### 3.2 "A Torre é o método" (14/11/2026)
+O autor aprovou a Fase 3 no geral, mas achou a página "crua" e pediu um diferencial que ajude a vender. Diagnóstico de designer, olhando as capturas: (1) o urso e o touro não se liam em nenhum descanso (a 35° viravam uma mancha); (2) os seis blocos eram a mesma tela seis vezes, e a Torre só girava, sem dizer nada; (3) a página não dava nada para fazer além de abrir o WhatsApp; (4) os Sócios mostravam "a confirmar" justamente para quem vai julgar a proposta.
+
+**A ideia.** A Torre deixa de ser só a imagem e vira o método: **a base é "Organize", o corpo é "Multiplique", a coroa é "Tenha liberdade"** (os três verbos do slogan real; a Nexfort já usa a Torre como metáfora na "Imersão Torre Mestra"). Duas peças saem daí:
+
+- **A Torre se desmonta no bloco do método** (antigo "Como trabalhamos"). A peça 3D é feita de três partes (`parts.ts`: cortes nas juntas do desenho, y = −0,837 e 0,543); no descanso desse bloco elas se afastam (`data-torre-explode`, vão de 0,2 unidade) e o nome de cada etapa aparece ao lado da sua parte. A Torre viaja fechada: abre só na segunda metade da chegada e fecha na primeira metade da saída. As faces de corte têm a cor do desenho (âmbar). Os nomes são HTML sobre a âncora, posicionados por fração da altura (`PART_CENTERS`); o palco os acende quando a Torre termina de abrir, e sem WebGL ficam apagados (o emblema 2D não se desmonta).
+- **Diagnóstico de 1 minuto** (`Diagnostic.tsx` no servidor, `DiagnosticQuiz.tsx` no cliente), logo depois do método: cinco perguntas situam a pessoa numa das três etapas, a Torre do logo em 2D enche até essa etapa e um botão abre o WhatsApp com a etapa e as respostas. É o argumento de venda: o site entrega conversas já qualificadas, e a Nexfort pode divulgar o diagnóstico no Instagram. O site não guarda nada (sem servidor, sem cookie); o texto diz isso e avisa que não é avaliação financeira. Regra do resultado e textos em `src/content/nexfort.ts` (`diagnostic`), tudo rascunho da IA. É a única seção escura (marinho) e a primeira que usa o Motion (`LazyMotion` + `m`, mola 300/30/1, só `x` e `opacity`; com "menos movimento", só opacidade).
+
+**Outros ajustes.** Descanso a 22° em vez de 35° (`FACING_ANGLE`): o desenho lê inteiro. Miolo com menos metal (0,1) e filete de luz mais brando, para o estúdio não riscar o desenho. Rótulos de seção em frase comum (sem caixa-alta espaçada) e sem a numeração 01 a 06, que não era sequência (ficou só nas etapas do método, que são). Hero com um segundo caminho ("Descobrir a minha etapa em 1 minuto") e as três frentes como índice no pé da tela; cabeçalho com navegação em tela larga; Lenis com `anchors: true`. Sócios sem "cargo/biografia a confirmar": os campos `role` e `bio` são opcionais e só aparecem quando existirem.
+
+**Medido (build de produção, Chrome com GPU, 14/11/2026).** Torre inteira e fora do texto nos 7 descansos visíveis, desktop e celular; 0 chamadas de desenho parado (e de novo depois de rolar); revelação conforme nas 4 configurações; sem barra horizontal; reservas sem JS e sem WebGL com 7 emblemas. Maior tarefa longa do carregamento: 274 a 312 ms, contra 220 a 263 ms do build da Fase 3 **medido no mesmo dia e na mesma máquina** (ela está mais lenta que em 09/11, quando deu 133 a 138 ms): o custo das novidades é de 40 a 50 ms. Pesquisa na web por conteúdo real da Nexfort (serviços, a Imersão) não achou nada além dos perfis: os textos continuam rascunho.
+
+### 3.3 Página com cor e conteúdo de site real (14/11/2026)
+Depois da seção 3.2 o autor disse que "ainda não foi feito nada de mais" e pediu **mais vida, mais texto (conciso), mais cores, fundo melhor e uma página realista**. A página minimalista e quase toda no fundo claro não o convence: ele quer presença visual.
+
+**Camadas (o que permite a cor).** Antes a Torre ficava atrás de todo o conteúdo, então qualquer fundo de seção a cobria. Agora são três camadas: fundos e nichos das seções (sem `z-index`), o canvas da Torre (`z-index: 1`) e o texto (classe `.layer`, `z-index: 2`; o `Reveal` já a aplica). Seção de fundo opaco leva `.layer` inteira e a Torre passa por trás dela.
+
+**Cor.** As três cores quentes do logo (o degradê do urso e do touro) viraram sistema: âmbar `#FBAE14` = Finanças Empresariais, laranja `#E36D04` = Finanças Pessoais, vermelho `#C21E04` = Investimentos (`[data-area]` define `--accent` e `--accent-ink`; contraste do texto sobre cada uma ≥ 5,5:1). A cor aparece no nicho atrás da Torre, no filete das listas, no ponto do rótulo, nas etiquetas e nas fichas. Fundos novos: creme `#FDF2DC` e lilás `#DCD8EF`. Isto substitui, a pedido do autor, a regra "destaque em no máximo 10% da tela" da Fase 3.
+
+**O que entrou.**
+- **Nicho atrás da Torre** (`.torre-niche`, dentro da âncora): um arco colorido; no hero, com o degradê do logo; nas três frentes, na cor de cada uma; em Programas, lilás. O bloco do método tem o fundo lilás inteiro.
+- **Faixa do slogan** (`WordBand`): âmbar de ponta a ponta, com os três verbos em letras grandes que deslizam com a rolagem (scrub; paradas com "menos movimento").
+- **"Alguma destas frases é sua?"** (`Signs`): seis situações do dia a dia em fichas que levam à frente certa. Fundo creme.
+- **Itens com uma linha de explicação** nas três frentes; **"para quem"** em cada programa; texto de apoio maior no hero.
+- **Dúvidas** (`Faq`): seis perguntas em `<details>` nativo, sobre o lilás. As respostas só afirmam o que já está no site.
+- **Contato numa faixa âmbar**, com botão marinho e link "Ver no mapa" (só o link, nenhum mapa carregado).
+- **Rodapé de verdade** (marca, frentes, seções, contato, avisos) e **cabeçalho fixo** com botão e filete de progresso (`HeaderShell`).
+- **Retratos dos Sócios** em marinho e no degradê do logo, enquanto não há fotos.
+
+**Coreografia.** Com o cabeçalho fixo, a seção descansa centralizada na área abaixo dele (`HEADER_PX`) e o topo da âncora fica a pelo menos 12% do topo (era 8%). Ao sair de cena a Torre some antes da metade do caminho e só reaparece na chegada, para não cruzar as seções vizinhas meio transparente. Descansos fora de cena agora são quatro: sinais, diagnóstico, Sócios e dúvidas.
+
+**Medido (build de produção, 14/11/2026).** Torre inteira e fora do texto em todos os descansos (desktop e celular); 0 chamadas de desenho parado; revelação conforme; sem barra horizontal; reservas com 7 emblemas; maior tarefa longa 274 a 288 ms (igual à da seção 3.2).
+
 ### O logo (matéria-prima)
 - Torre de xadrez **azul-marinho**, chapada, com ameias no topo e base larga.
 - No miolo da Torre, as silhuetas de um **urso e um touro** em degradê **amarelo → laranja → vermelho**.
@@ -260,7 +293,9 @@ Coletados de perfis públicos para a versão anterior. Use só como demonstraç�
 | 5 | 08/11/2026 | **Nova direção definida: "Uma volta na Torre"** (seção 3). Fase 1 feita: Torre, miolo, emblema e nome extraídos do logo em vetor (`design/torre/extract_torre.py`). |
 | 6 | 08/11/2026 | **Fatia de prova construída** (Fase 2): Torre 3D, hero, bloco Finanças Empresariais, assinatura e contato. Commit `a61a738` ("NEXFORT 2.0"). |
 | 7 | 08/11/2026 | **Feedback do autor sobre a fatia** (4 ajustes, seção 3) e **prompt da Fase 3** salvo em `PROMPT_FASE_3.md`; ferramentas de QA levadas para `design/qa/`. |
-| 8 | 09/11/2026 | **Fase 3 executada** em modo auto (seção 3.1): paleta 60-30-10, redesenho do miolo (A), Torre de duas faces, revelação pelo lado, blocos 02 a 06, prancha de decisões e QA com números. Sem commit. |
+| 8 | 09/11/2026 | **Fase 3 executada** em modo auto (seção 3.1): paleta 60-30-10, redesenho do miolo (A), Torre de duas faces, revelação pelo lado, blocos 02 a 06, prancha de decisões e QA com números. Commit `c845e4f`. |
+| 10 | 14/11/2026 | **Cor e conteúdo de site real** (seção 3.3): o autor achou que ainda não havia "nada de mais". Entraram os nichos coloridos, a faixa do slogan, as fichas de situações, as dúvidas, o contato em âmbar, o rodapé completo e o cabeçalho fixo. Sem commit. |
+| 9 | 14/11/2026 | **"A Torre é o método"** (seção 3.2): o autor achou a página crua e pediu um diferencial. A Torre se desmonta nas três etapas, entra o diagnóstico de 1 minuto com envio pelo WhatsApp, e o desenho passa a ler (22°). Sem commit. |
 
 ---
 
@@ -300,6 +335,17 @@ Coletados de perfis públicos para a versão anterior. Use só como demonstraç�
 | 09/11/2026 | Revelação: horizontal pelo lado no desktop, vertical abaixo de 1024 px, títulos sem máscara, 900 ms, hero também em 900 ms | Pedido do autor; uma transição só |
 | 09/11/2026 | Salto de rolagem e "menos movimento" tratados no rig (giro por equivalência só no salto do alvo; pose travada com menos movimento) | Revisão de código: o atraso do amortecimento não pode inverter o giro e quem pede menos movimento não vê a Torre girar |
 | 09/11/2026 | Sócios: retratos em iniciais, cargos e bios "a confirmar", Torre fora de cena | Nada de foto do Instagram sem autorização nem rosto falso |
+| 14/11/2026 | **A Torre é o método**: base = Organize, corpo = Multiplique, coroa = Tenha liberdade; ela se desmonta no bloco do método | O autor pediu um diferencial: a Torre só girava, sem dizer nada. A leitura usa o slogan real e a metáfora que a Nexfort já usa (Torre Mestra) |
+| 14/11/2026 | Diagnóstico de 1 minuto que leva a etapa e as respostas para o WhatsApp; o site não guarda nada | É o argumento de venda: conversas já qualificadas e algo para a Nexfort divulgar. Sem servidor nem cookie, não há dado pessoal para tratar |
+| 14/11/2026 | O diagnóstico só situa a pessoa numa etapa: não avalia, não recomenda e não promete | Mesma linha das regras de 31/10 (CVM) |
+| 14/11/2026 | Descanso da Torre a 22° (era 35°); miolo com menos metal | A 35° o urso e o touro viravam mancha: a pendência já apontava o focinho escondido |
+| 14/11/2026 | Sem numeração 01 a 06 nos blocos e sem rótulo em caixa-alta espaçada | As frentes não são sequência; número e caixa-alta eram enfeite de template. A numeração ficou só nas etapas do método |
+| 14/11/2026 | Sócios sem "a confirmar" na tela (campos opcionais) | Numa proposta, texto de pendência no lugar do cargo lê como site inacabado. Substitui a decisão de 09/11 |
+| 14/11/2026 | Página com cor e seções de site real: nichos, faixas e fundos coloridos; cada frente com uma cor quente do logo | Pedido do autor: "mais vida, mais texto, mais cores, fundo melhor, página realista". Substitui o limite de 10% de destaque |
+| 14/11/2026 | Três camadas: fundos < Torre < texto (`.layer`) | Só assim um fundo colorido pode ficar atrás da Torre sem cobri-la |
+| 14/11/2026 | Cabeçalho fixo, com botão e filete de progresso | Convenção de site real: o caminho para conversar fica sempre à mão |
+| 14/11/2026 | `NEXT_DEV_ORIGINS` (no `.env.local`) libera outros endereços no `next dev` | Pelo IP da rede o Next bloqueava os recursos de dev, a página não hidratava e a Torre não aparecia |
+| 14/11/2026 | `NEXT_DIST_DIR` escolhe a pasta do build (`next.config.ts`) | Permite buildar e servir ao lado de um `next start` antigo sem trocar o `.next` por baixo dele |
 | 09/11/2026 | Onde o verificador da `design-taste-frontend` bate com decisão do autor, vale a do autor | Pedido do prompt da Fase 3 (3D fora de tecnologia, Torre como visual, 120svh, slogan como h1, dados públicos reais) |
 
 ---
@@ -324,12 +370,15 @@ Coletados de perfis públicos para a versão anterior. Use só como demonstraç�
 
 ---
 
-## 10. Pendências e próximos passos (09/11/2026)
+## 10. Pendências e próximos passos (14/11/2026)
+
+- **Servidores:** o build de 14/11 está em `.next-previa` e roda em http://localhost:3102 (`NEXT_DIST_DIR=.next-previa npx next start -p 3102`). As portas 3100 e 3101 ainda têm `next start` de sessões antigas, com a versão da Fase 3; o modo auto não deixa a IA encerrá-los, então o autor precisa fechá-los.
+- **Para vender:** validar com a Nexfort as perguntas e os textos do diagnóstico e a leitura base/corpo/coroa; trocar as iniciais dos Sócios por retratos e preencher `role` e `bio`.
+- **Ainda falta, na avaliação da IA:** fotos reais (sócios, escritório) no lugar das iniciais, que é o que mais separa a página de um site de verdade; textos validados pela Nexfort (as fichas de situações e as dúvidas são rascunho); e uma página de proposta (o que é, quanto custa, próximos passos) para acompanhar o link na abordagem.
 
 - **Revisão final do movimento:** o autor roda `/review-animations` (só ele pode disparar essa skill).
 - **Servidor de produção:** a porta 3100 estava ocupada por um `next start` de uma sessão anterior, e o classificador do modo auto não permitiu encerrá-lo. O servidor novo ficou na porta 3101. Para trocar: encerre o processo da 3100 (confira que é `next start`) e rode `npx next start -p 3100`.
 - **Dados a confirmar com a Nexfort antes de qualquer publicação:** cargos, biografias e fotos dos sócios; descrições dos programas e "6 edições"; textos dos blocos (rascunho da IA); registro profissional (CVM, ANCORD, CFP) antes de falar em recomendação de investimentos.
 - **Silhueta 2D (reserva sem WebGL e sem JavaScript):** herda a escada do JPEG na borda direita (só aparece nessa reserva em tamanho grande). O 3D usa o perfil liso. Se incomodar: suavizar `sil_loops` em `extract_torre.py`.
-- **Ângulo de descanso:** os 35° escondem o focinho do urso nos descansos de frente (hero, 02 e 04), onde a face vira para a esquerda; se o autor quiser ver mais do rosto, `FACING_ANGLE` em `choreography.ts` (25° a 30°).
 - **Fase 4 (acabamento):** Lighthouse, teste num Android real, desempenho do carregamento no celular, `viewport-fit`/áreas seguras se o site for usado em tela cheia.
 - **Cuidados antes da abordagem:** seção 9.

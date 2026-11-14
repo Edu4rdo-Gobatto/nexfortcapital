@@ -3,15 +3,19 @@
 import { useThree } from "@react-three/fiber";
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
-import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
+import { mergeGeometries, mergeVertices } from "three/addons/utils/BufferGeometryUtils.js";
 import { TORRE_MERLONS, TORRE_NAVY, TORRE_PROFILE } from "./geometry";
 import { MIOLO_GRADIENT, MIOLO_PATH } from "./miolo";
+import { TORRE_CUTS } from "./parts";
 
 /**
  * A Torre do logo como objeto: corpo de revolução (perfil medido no logo), ameias em volta e o urso e o
  * touro como incrustação nas DUAS faces. O corpo é dividido em duas metades que usam a mesma textura do
  * miolo e o mesmo material: a da frente a recebe projetada de frente (a vista frontal fica idêntica ao
  * logo); a de trás, projetada de trás e espelhada em x, para o desenho ler certo de lá também.
+ *
+ * A peça é feita de três partes (base, corpo e coroa: as três etapas do método), cortadas nas juntas que o
+ * desenho já tem. Fechadas, formam a Torre do logo; no bloco do método a cena as afasta (TorreScene).
  */
 
 const RADIAL_SEGMENTS = 144;
@@ -27,11 +31,14 @@ const TEX = { x0: -0.66, x1: 0.66, y0: -0.1, y1: 1.24, size: 1024 };
 const LIMB_FADE = 0.06;
 const LIMB_STEPS = 10;
 
-/** Laca: base acetinada sob um verniz brilhante. Incrustação: metal quente sob o mesmo verniz. */
+/**
+ * Laca: base acetinada sob um verniz brilhante. Incrustação: esmalte quente, quase sem metal, sob o mesmo verniz:
+ * com mais metal o urso e o touro espelhavam o estúdio e perdiam a cor chapada que têm no logo.
+ */
 const FINISH = {
   navyRoughness: 0.42,
-  mioloRoughness: 0.4,
-  mioloMetalness: 0.3,
+  mioloRoughness: 0.5,
+  mioloMetalness: 0.1,
   clearcoat: 1,
   clearcoatRoughness: 0.1, // laca acetinada: reflexos nítidos, sem cara de plástico espelhado
 };
@@ -139,9 +146,15 @@ function mioloTextures(maxAnisotropy: number) {
  */
 const NAVY_UV = [0.01, 0.99] as const;
 
-function flatNavyUVs(geometry: THREE.BufferGeometry) {
+/**
+ * Um ponto da textura dentro do urso (o âmbar do topo do degradê): as faces de corte apontam o UV para ele.
+ * Desmontada, a Torre mostra por dentro a cor do desenho, como se a incrustação atravessasse a peça.
+ */
+const CUT_UV = [(0.1 - TEX.x0) / (TEX.x1 - TEX.x0), 1 - (0.1 - TEX.y0) / (TEX.y1 - TEX.y0)] as const;
+
+function flatUVs(geometry: THREE.BufferGeometry, [u, v]: readonly [number, number]) {
   const uv = geometry.getAttribute("uv") as THREE.BufferAttribute;
-  for (let i = 0; i < uv.count; i++) uv.setXY(i, NAVY_UV[0], NAVY_UV[1]);
+  for (let i = 0; i < uv.count; i++) uv.setXY(i, u, v);
   uv.needsUpdate = true;
 }
 
@@ -203,17 +216,59 @@ function merlonGeometry(a0: number, a1: number) {
   return geometry;
 }
 
+/** Face de corte: um disco no raio do perfil, virado para cima ou para baixo, na cor do desenho. */
+function cutGeometry(radius: number, y: number, up: boolean) {
+  const geometry = new THREE.CircleGeometry(radius, RADIAL_SEGMENTS);
+  geometry.rotateX(up ? -Math.PI / 2 : Math.PI / 2);
+  geometry.translate(0, y, 0);
+  flatUVs(geometry, CUT_UV);
+  return geometry;
+}
+
+/**
+ * Junta várias geometrias numa só (um desenho por parte); as originais são descartadas. Todas precisam ter
+ * índice para se juntarem: as ameias (extrusão, sem índice) ganham um, em vez de as metades de revolução
+ * perderem o delas (sem índice, cada metade teria seis vezes mais vértices para montar e subir à GPU).
+ */
+function fuse(geometries: THREE.BufferGeometry[]) {
+  const indexed = geometries.map((geometry) => (geometry.index ? geometry : mergeVertices(geometry)));
+  const fused = mergeGeometries(indexed);
+  new Set([...geometries, ...indexed]).forEach((geometry) => geometry.dispose());
+  return fused;
+}
+
+/**
+ * Uma parte da Torre: o trecho [from, to] do perfil, em duas metades (frente e verso, cada uma com o desenho
+ * projetado do seu lado), fechado por faces de corte onde encosta nas vizinhas.
+ */
+function partGeometry(from: number, to: number, cuts: { bottom: boolean; top: boolean }, extra: THREE.BufferGeometry[] = []) {
+  const points = TORRE_PROFILE.slice(from, to + 1).map(([r, y]) => new THREE.Vector2(r, y));
+  const front = new THREE.LatheGeometry(points, RADIAL_SEGMENTS / 2, -Math.PI / 2, Math.PI);
+  projectUVs(front, false);
+  const back = new THREE.LatheGeometry(points, RADIAL_SEGMENTS / 2, Math.PI / 2, Math.PI);
+  projectUVs(back, true);
+  const geometries = [front, back, ...extra];
+  if (cuts.bottom) geometries.push(cutGeometry(TORRE_PROFILE[from][0], TORRE_PROFILE[from][1], false));
+  if (cuts.top) geometries.push(cutGeometry(TORRE_PROFILE[to][0], TORRE_PROFILE[to][1], true));
+  return fuse(geometries);
+}
+
+/** Nomes das partes que se afastam: a cena as encontra por aqui (o corpo fica no lugar). */
+export const TORRE_PART_NAMES = { base: "torre-base", crown: "torre-coroa" } as const;
+
 export function Torre() {
   const maxAnisotropy = useThree((state) => state.gl.capabilities.getMaxAnisotropy());
 
   const parts = useMemo(() => {
-    const points = TORRE_PROFILE.map(([r, y]) => new THREE.Vector2(r, y));
-    const front = new THREE.LatheGeometry(points, RADIAL_SEGMENTS / 2, -Math.PI / 2, Math.PI);
-    projectUVs(front, false);
-    const back = new THREE.LatheGeometry(points, RADIAL_SEGMENTS / 2, Math.PI / 2, Math.PI);
-    projectUVs(back, true);
+    const last = TORRE_PROFILE.length - 1;
+    const baseCut = TORRE_PROFILE.findIndex(([, y]) => y >= TORRE_CUTS.base);
+    const crownCut = TORRE_PROFILE.findIndex(([, y]) => y >= TORRE_CUTS.crown);
     const merlons = mergeGeometries(TORRE_MERLONS.spans.map(([a0, a1]) => merlonGeometry(a0, a1)));
-    flatNavyUVs(merlons);
+    flatUVs(merlons, NAVY_UV);
+
+    const base = partGeometry(0, baseCut, { bottom: false, top: true });
+    const body = partGeometry(baseCut, crownCut, { bottom: true, top: true });
+    const crown = partGeometry(crownCut, last, { bottom: true, top: false }, [merlons]);
 
     const textures = mioloTextures(maxAnisotropy);
     const material = new THREE.MeshPhysicalMaterial({
@@ -227,14 +282,14 @@ export function Torre() {
       clearcoat: FINISH.clearcoat,
       clearcoatRoughness: FINISH.clearcoatRoughness,
     });
-    return { front, back, merlons, material, textures };
+    return { base, body, crown, material, textures };
   }, [maxAnisotropy]);
 
   useEffect(
     () => () => {
-      parts.front.dispose();
-      parts.back.dispose();
-      parts.merlons.dispose();
+      parts.base.dispose();
+      parts.body.dispose();
+      parts.crown.dispose();
       parts.material.dispose();
       Object.values(parts.textures).forEach((texture) => texture.dispose());
     },
@@ -243,9 +298,9 @@ export function Torre() {
 
   return (
     <group>
-      <mesh geometry={parts.front} material={parts.material} />
-      <mesh geometry={parts.back} material={parts.material} />
-      <mesh geometry={parts.merlons} material={parts.material} />
+      <mesh name={TORRE_PART_NAMES.base} geometry={parts.base} material={parts.material} />
+      <mesh geometry={parts.body} material={parts.material} />
+      <mesh name={TORRE_PART_NAMES.crown} geometry={parts.crown} material={parts.material} />
     </group>
   );
 }

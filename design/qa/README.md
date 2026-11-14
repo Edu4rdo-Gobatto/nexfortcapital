@@ -9,6 +9,9 @@ Roteiros usados para verificar a Torre e a página com números, num navegador d
 3. Sirva o build de produção: `npm run build` e depois `npx next start -p 3100`.
 4. Para reiniciar o servidor, encerre o processo da porta 3100 pelo PID, conferindo que a linha de comando é `next start`.
    Nunca rebuilde com o servidor de pé: o `.next` muda por baixo dele.
+5. Se houver um `next start` antigo que não dá para encerrar, builde e sirva em outra pasta e outra porta:
+   `NEXT_DIST_DIR=.next-previa npx next build` e `NEXT_DIST_DIR=.next-previa npx next start -p 3102`.
+   O Next acrescenta a pasta nova ao `include` do `tsconfig.json`: desfaça com `git checkout -- tsconfig.json`.
 
 Tudo é gravado em `design/qa/saida/`, ignorado pelo Git.
 

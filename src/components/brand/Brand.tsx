@@ -3,9 +3,10 @@ import { EMBLEM, WORDMARK } from "./marks";
 
 const WORDMARK_ID = "nexfort-wordmark";
 const EMBLEM_ID = "nexfort-emblem";
-const SILHOUETTE_ID = "nexfort-emblem-silhouette";
+/** Silhueta da Torre e o recorte por ela: o medidor do diagnóstico reusa os dois por referência. */
+export const SILHOUETTE_ID = "nexfort-emblem-silhouette";
 const MIOLO_GRADIENT_ID = "nexfort-emblem-miolo";
-const MIOLO_CLIP_ID = "nexfort-emblem-clip";
+export const MIOLO_CLIP_ID = "nexfort-emblem-clip";
 
 /** "NEXFORT CAPITAL" traçado do logo original. Herda a cor do texto. O desenho é definido uma vez, em BrandSymbols. */
 export function Wordmark({ className, title }: { className?: string; title?: string }) {

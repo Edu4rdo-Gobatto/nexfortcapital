@@ -19,6 +19,8 @@ import { cn } from "@/lib/cn";
  * Direção: `from` é o lado da coluna na tela. No desktop (≥ 64rem) o texto entra desse lado, em direção
  * ao centro, no mesmo sentido em que a Torre chega: um movimento de câmera, não dois competindo. Abaixo
  * disso a cena só anda na vertical, e o texto sobe (o CSS decide pela largura).
+ *
+ * Camada: todo texto revelado fica acima do canvas da Torre (classe `layer`).
  */
 export function Reveal({ children, className, from }: { children: ReactNode; className?: string; from: "left" | "right" }) {
   const root = useRef<HTMLDivElement>(null);
@@ -76,7 +78,7 @@ export function Reveal({ children, className, from }: { children: ReactNode; cla
   );
 
   return (
-    <div ref={root} data-reveal="" data-reveal-from={from} className={cn(className)}>
+    <div ref={root} data-reveal="" data-reveal-from={from} className={cn("layer", className)}>
       {children}
     </div>
   );

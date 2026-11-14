@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } 
 import * as THREE from "three";
 import { attachScene, CAMERA, sampleIntroFrame, stepRig, type TorreRig } from "./choreography";
 import { TORRE_HEIGHT } from "./geometry";
-import { Torre } from "./Torre";
+import { EXPLODE_GAP } from "./parts";
+import { Torre, TORRE_PART_NAMES } from "./Torre";
 
 /**
  * Cena 3D, carregada sob demanda pelo palco (next/dynamic, sem SSR).
@@ -47,7 +48,7 @@ function studioScene() {
     scene.add(mesh);
   };
   light(plane, 2.6, [3, 3.5, 6], [7, 5, 1]); // softbox principal
-  light(plane, 7, [-5, 1, 1.5], [0.5, 9, 1]); // filete de recorte à esquerda
+  light(plane, 4.2, [-5, 1, 1.5], [0.7, 9, 1]); // filete de recorte à esquerda: mais largo e mais brando, para não riscar o desenho
   light(plane, 1.6, [5.5, 0, -2], [1.6, 7, 1]); // contraluz
   light(disc, 2.2, [0, 8, 0], [4, 4, 1]); // teto
   light(plane, 0.8, [0, -6, 0], [14, 14, 1], "#f6f5f9"); // chão: o fundo da página (--color-paper)
@@ -145,16 +146,28 @@ function applyLights(scene: THREE.Scene, key: THREE.DirectionalLight | null, lig
   if (key) key.intensity = 1.1 * light;
 }
 
-/** Pose amortecida no grupo: gira no próprio eixo, depois inclina para a câmera (ordem XYZ). */
+/**
+ * Pose amortecida no grupo: gira no próprio eixo, depois inclina para a câmera (ordem XYZ). Desmontada, a
+ * Torre fica mais alta (os dois vãos): a escala desconta isso, e a peça inteira continua cabendo na âncora.
+ */
 function applyPose(group: THREE.Group, rig: TorreRig) {
   const c = rig.current;
+  const gap = EXPLODE_GAP * c.explode;
   group.position.set(c.x, c.y, 0);
-  group.scale.setScalar(c.h / TORRE_HEIGHT);
+  group.scale.setScalar(c.h / (TORRE_HEIGHT + 2 * gap));
   group.rotation.set(c.tilt, c.rot + rig.intro.spin, 0);
+  // a coroa sobe e a base desce; o corpo fica no lugar
+  const base = group.getObjectByName(TORRE_PART_NAMES.base);
+  const crown = group.getObjectByName(TORRE_PART_NAMES.crown);
+  if (base) base.position.y = -gap;
+  if (crown) crown.position.y = gap;
 }
 
+/** A sombra de contato acompanha a base quando ela desce. */
 function applyShadow(shadow: THREE.Mesh | null, rig: TorreRig) {
-  if (shadow?.material instanceof THREE.Material) {
+  if (!shadow) return;
+  shadow.position.y = BASE_Y - EXPLODE_GAP * rig.current.explode;
+  if (shadow.material instanceof THREE.Material) {
     shadow.material.opacity = SHADOW_OPACITY * rig.current.shadow * rig.intro.light;
   }
 }

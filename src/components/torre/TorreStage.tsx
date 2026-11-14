@@ -35,7 +35,7 @@ function hasWebGL() {
 const noSubscribe = () => () => {};
 
 /**
- * Palco da Torre: um canvas fixo atrás de todo o conteúdo. A rolagem decide onde a Torre está (âncoras
+ * Palco da Torre: um canvas fixo entre os fundos das seções e o texto (camadas em globals.css). A rolagem decide onde a Torre está (âncoras
  * [data-torre-anchor] nas seções) e quanto ela já girou. Nada se mexe sozinho, fora a Chegada.
  */
 export function TorreStage({ children }: { children: ReactNode }) {
@@ -53,6 +53,9 @@ export function TorreStage({ children }: { children: ReactNode }) {
 
       const anchors = gsap.utils.toArray<HTMLElement>("[data-torre-anchor]", container.current);
       if (!anchors.length) return;
+      const labels = gsap.utils.toArray<HTMLElement>("[data-torre-labels]", container.current);
+      const webglOn = hasWebGL();
+      let labelOpacity = "";
       const ease = gsap.parseEase("power3.inOut");
       const mm = gsap.matchMedia();
 
@@ -80,8 +83,15 @@ export function TorreStage({ children }: { children: ReactNode }) {
               // inclina para a câmera: a vista tem a mesma elevação em qualquer altura da tela
               tilt: pose.elev + Math.atan(y / CAMERA.z),
               shadow: pose.shadow,
+              explode: pose.explode,
             });
             if (stage.current) stage.current.style.opacity = String(pose.opacity);
+            // os nomes das etapas só aparecem com a Torre 3D quase toda aberta (sem WebGL o emblema 2D não se desmonta)
+            const named = webglOn ? String(Math.min(1, Math.max(0, (pose.explode - 0.6) / 0.4))) : "0";
+            if (named !== labelOpacity) {
+              labelOpacity = named;
+              labels.forEach((label) => (label.style.opacity = named));
+            }
             rig.invalidate?.();
           };
 
@@ -139,7 +149,8 @@ export function TorreStage({ children }: { children: ReactNode }) {
           {webgl ? <TorreScene rigRef={rigRef} /> : null}
         </div>
       </div>
-      <div className="relative z-10">{children}</div>
+      {/* sem z-index aqui: os fundos e nichos das seções ficam abaixo do canvas, e o texto (classe `layer`) acima */}
+      <div>{children}</div>
     </div>
   );
 }
