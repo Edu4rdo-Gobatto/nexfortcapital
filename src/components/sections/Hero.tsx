@@ -7,8 +7,9 @@ const order = (i: number) => ({ "--i": i }) as CSSProperties;
 
 /**
  * Hero: o que a empresa faz, em uma frase, e dois caminhos: conversar agora ou descobrir a própria etapa no
- * diagnóstico. A Torre ocupa a direita, com a frente virada para o texto, diante de um arco com o degradê do
- * logo. No pé da primeira tela (desktop), as três frentes como índice, cada uma com a sua cor. A entrada é CSS
+ * diagnóstico. A Torre ocupa a direita, com a frente virada para o texto, direto sobre o fundo da página: a
+ * escultura é a única coisa colorida da tela. No pé da primeira tela (desktop), as três frentes como índice.
+ * A entrada é CSS
  * puro (keyframes no compositor): não espera o JavaScript. O texto está à esquerda e entra da esquerda (no
  * celular, sobe).
  */
@@ -18,7 +19,7 @@ export function Hero() {
     <section data-torre-section="" id="topo" className="relative flex min-h-svh items-center px-(--gutter) pt-24 pb-16 lg:py-24">
       <div className="mx-auto grid w-full max-w-(--page-max) grid-cols-1 items-center gap-y-6 lg:grid-cols-12 lg:gap-x-8">
         {/* no celular a Torre é mais baixa (31svh): os dois caminhos cabem na primeira tela */}
-        <TorreAnchor id="hero" face="frente" facing="esquerda" niche="sun" className="h-[31svh] lg:order-2 lg:col-span-5 lg:col-start-8 lg:h-[78svh]" />
+        <TorreAnchor id="hero" face="frente" facing="esquerda" className="h-[31svh] lg:order-2 lg:col-span-5 lg:col-start-8 lg:h-[78svh]" />
 
         <div className="layer lg:order-1 lg:col-span-7">
           <p className="eyebrow hero-fade" style={order(0)}>
@@ -51,7 +52,7 @@ export function Hero() {
         <ul className="mx-auto flex w-full max-w-(--page-max) gap-x-10 text-sm">
           {hero.index.map((key) => (
             <li key={key}>
-              <a className="hero-index" data-area={key} href={areas[key].href}>
+              <a className="hero-index" href={areas[key].href}>
                 {areas[key].label}
               </a>
             </li>

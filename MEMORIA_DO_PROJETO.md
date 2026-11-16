@@ -2,7 +2,7 @@
 
 Última atualização: 14/11/2026.
 
-> **Estado atual: "A Torre é o método" (14/11/2026, seção 3.2), sobre a Fase 3 (09/11/2026).** A direção é **"Uma volta na Torre"** (seção 3), com a Torre do logo em 3D. A página tem o hero, a faixa do slogan, as frases de quem procura ajuda, seis blocos imagem/texto, o diagnóstico de 1 minuto, as dúvidas, a assinatura e o contato, com cor de verdade (seção 3.3). No bloco do método a Torre se desmonta em base, corpo e coroa (as três etapas do slogan) e o diagnóstico diz ao visitante em qual ele está. As mudanças de 14/11 estão no working tree, sem commit. Falta o acabamento (Lighthouse, Android real), a revisão do movimento pelo autor (`/review-animations`) e o material real da Nexfort.
+> **Estado atual: limpeza visual de 15/11/2026 (seção 3.4), sobre "A Torre é o método" (14/11/2026, seção 3.2) e a Fase 3 (09/11/2026).** A direção é **"Uma volta na Torre"** (seção 3), com a Torre do logo em 3D. A página tem o hero, a faixa do slogan, as frases de quem procura ajuda, seis blocos imagem/texto, o diagnóstico de 1 minuto, as dúvidas, a assinatura e o contato, com cor de verdade (seção 3.3). No bloco do método a Torre se desmonta em base, corpo e coroa (as três etapas do slogan) e o diagnóstico diz ao visitante em qual ele está. As mudanças de 14/11 estão no working tree, sem commit. Falta o acabamento (Lighthouse, Android real), a revisão do movimento pelo autor (`/review-animations`) e o material real da Nexfort.
 
 > **DESCARTADO: a animação do touro e do urso se chocando.** A abertura em rolagem (`BrandPrologue`), em que os dois animais correm, colidem, explodem em luz e formam a Torre, **não será mais usada**. Não a recrie, não a adapte e não a sugira de novo, nem como variação.
 
@@ -200,6 +200,23 @@ Depois da seção 3.2 o autor disse que "ainda não foi feito nada de mais" e pe
 
 **Medido (build de produção, 14/11/2026).** Torre inteira e fora do texto em todos os descansos (desktop e celular); 0 chamadas de desenho parado; revelação conforme; sem barra horizontal; reservas com 7 emblemas; maior tarefa longa 274 a 288 ms (igual à da seção 3.2).
 
+### 3.4 Limpeza visual: menos "cara de IA" (15/11/2026)
+O autor viu a página no ar (Vercel) e achou **"muito feia"**: cards demais ("cara de IA") e **a faixa central de palavras passando** ("a coisa mais feia de todas"). Pediu um plano de melhoria geral e a revisão com a skill `frontend-design`. O plano (cores, tipografia, wireframe, autocrítica contra os clichês de IA) foi aprovado e executado. **Isto substitui, em parte, a seção 3.3** ("mais cor"): a cor de interface saiu e a Torre ficou como a única coisa colorida.
+
+**O que saiu.**
+- **Faixa do slogan** (`WordBand`, âmbar de ponta a ponta, palavras deslizando): removida. Repetia o `h1` do hero logo abaixo dele.
+- **"Alguma destas frases é sua?"** (`Signs`, seis fichas brancas com borda colorida e etiqueta em pílula): removida, com `band` e `signs` de `nexfort.ts`. A ideia sobrevive sem card: cada uma das três frentes abre com **uma situação** em serifa (`situation`, sem aspas: é rascunho genérico, não depoimento de cliente).
+- **Nichos coloridos atrás da Torre** (`.torre-niche`, a prop `niche`, `NicheTone`): removidos. O urso e o touro já têm o degradê quente; o arco atrás brigava com a escultura. A Torre fica direto sobre o fundo.
+- **Pílulas** (`.chip`, `.chip--navy`) e **bolinha do rótulo** (`.eyebrow__dot`): removidas. A modalidade dos programas ("Presencial", "Avançado") virou texto.
+- **Cor por frente** (`[data-area]`, `--accent`, `accent` nos blocos): removida, e com ela `--color-orange`, `--color-red`, `--color-cream`, `--color-lilac` e `--gradient-sun`. Os filetes das listas (`.list-rule`) e do índice do hero são marinho.
+- **Caixotes de iniciais dos Sócios** (`.portrait`, `LS` e `GV`): removidos. Os sócios viraram texto (nome na serifa e Instagram) e a **Torre agora fica visível** nesse bloco (antes saía de cena). Cargo e biografia continuam opcionais, sem inventar nenhum.
+- **Faixa âmbar do contato**: o contato agora é marinho e forma um bloco só com o rodapé (um fio os separa). O botão âmbar é a única cor de destaque ali. As dúvidas passaram a fundo claro, separadas dos sócios por um fio.
+
+**Como ficou a paleta.** Fundo `#F6F5F9`, `paper-deep` só no bloco do método, marinho, tinta e **âmbar só no botão, no filete de progresso e como rótulo sobre o marinho**. Sem a âncora "sinais", a Torre vai direto do hero ao bloco das empresas; as âncoras fora de cena são duas (diagnóstico e dúvidas). O `measureRests` não mudou: lê o DOM.
+
+**Medido (build de produção, 15/11/2026, `capturas.mjs`).** Torre inteira e fora do texto em todos os descansos do desktop, inclusive nos Sócios. `tsc`, `eslint --max-warnings=0` e `next build` passam. Celular, revelação, reservas e orçamento de desenho ainda não foram rodados depois da limpeza.
+
+**Ainda por fazer:** fotos reais dos sócios; conferir no celular (Torre presa à âncora) depois da limpeza.
 ### O logo (matéria-prima)
 - Torre de xadrez **azul-marinho**, chapada, com ameias no topo e base larga.
 - No miolo da Torre, as silhuetas de um **urso e um touro** em degradê **amarelo → laranja → vermelho**.
@@ -296,6 +313,7 @@ Coletados de perfis públicos para a versão anterior. Use só como demonstraç�
 | 8 | 09/11/2026 | **Fase 3 executada** em modo auto (seção 3.1): paleta 60-30-10, redesenho do miolo (A), Torre de duas faces, revelação pelo lado, blocos 02 a 06, prancha de decisões e QA com números. Commit `c845e4f`. |
 | 10 | 14/11/2026 | **Cor e conteúdo de site real** (seção 3.3): o autor achou que ainda não havia "nada de mais". Entraram os nichos coloridos, a faixa do slogan, as fichas de situações, as dúvidas, o contato em âmbar, o rodapé completo e o cabeçalho fixo. Sem commit. |
 | 9 | 14/11/2026 | **"A Torre é o método"** (seção 3.2): o autor achou a página crua e pediu um diferencial. A Torre se desmonta nas três etapas, entra o diagnóstico de 1 minuto com envio pelo WhatsApp, e o desenho passa a ler (22°). Sem commit. |
+| 11 | 15/11/2026 | **Limpeza visual** (seção 3.4): o autor achou a página feia e com cara de IA. Saíram a faixa de palavras, as seis fichas, os arcos atrás da Torre, as pílulas, os caixotes de iniciais e a faixa âmbar do contato. Sem commit. |
 
 ---
 
@@ -346,6 +364,8 @@ Coletados de perfis públicos para a versão anterior. Use só como demonstraç�
 | 14/11/2026 | Cabeçalho fixo, com botão e filete de progresso | Convenção de site real: o caminho para conversar fica sempre à mão |
 | 14/11/2026 | `NEXT_DEV_ORIGINS` (no `.env.local`) libera outros endereços no `next dev` | Pelo IP da rede o Next bloqueava os recursos de dev, a página não hidratava e a Torre não aparecia |
 | 14/11/2026 | `NEXT_DIST_DIR` escolhe a pasta do build (`next.config.ts`) | Permite buildar e servir ao lado de um `next start` antigo sem trocar o `.next` por baixo dele |
+| 15/11/2026 | A interface não tem cor de seção: a Torre é a única coisa colorida; âmbar só no botão e no filete de progresso | Pedido do autor (página feia, cara de IA). Substitui a decisão de 14/11 de uma cor quente por frente |
+| 15/11/2026 | Sem cards, pílulas, faixa de palavras nem caixotes de iniciais; situações do dia a dia como texto dentro de cada frente | Cards em grade e etiquetas são o sinal mais comum de página gerada por IA |
 | 09/11/2026 | Onde o verificador da `design-taste-frontend` bate com decisão do autor, vale a do autor | Pedido do prompt da Fase 3 (3D fora de tecnologia, Torre como visual, 120svh, slogan como h1, dados públicos reais) |
 
 ---

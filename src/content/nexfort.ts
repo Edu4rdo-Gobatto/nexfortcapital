@@ -68,39 +68,14 @@ export const hero = {
   index: ["empresa", "pessoal", "investimentos"] as readonly AreaKey[],
 } as const;
 
-/** Faixa de palavras entre o hero e o resto: os três verbos do slogan (perfis públicos), em letras grandes. */
-export const band = { words: ["Organize", "Multiplique", "Tenha liberdade"] } as const;
-
-/**
- * "Alguma destas frases é sua?": situações do dia a dia, na voz de quem procura ajuda, cada uma ligada à frente
- * que cuida dela. Rascunho da IA: são situações genéricas de finanças, não relatos de clientes.
- */
-export const signs = {
-  id: "sinais",
-  area: "Por onde começar",
-  title: "Alguma destas frases é sua?",
-  lead: "São situações em que uma consultoria financeira ajuda. Cada uma tem um ponto de partida: toque na sua para ver qual.",
-  items: [
-    { area: "empresa", text: "Vendo bem, mas o caixa vive apertado." },
-    { area: "empresa", text: "A conta da empresa e a minha se misturam." },
-    { area: "pessoal", text: "O salário acaba antes do mês." },
-    { area: "pessoal", text: "Pago uma dívida fazendo outra." },
-    { area: "investimentos", text: "Sobra dinheiro, mas ele fica parado na conta." },
-    { area: "investimentos", text: "Invisto, mas não sei se faz sentido para mim." },
-  ] as readonly { area: AreaKey; text: string }[],
-} as const;
-
 export type Cta = { label: string; message: string };
-
-/** Cor do nicho atrás da Torre: uma das três frentes, o lilás neutro ou nenhum. */
-export type NicheTone = AreaKey | "sun" | "lilac";
 
 /**
  * Onde a Torre fica no bloco e o que mostra. O lado é o da Torre no desktop (o texto fica do outro); a face
- * alterna entre o desenho do logo (frente) e o espelhado (verso), sempre virada para o texto. `hidden`: a Torre
- * sai de cena neste bloco (Sócios) e volta na assinatura; `kind` só escolhe o que ocupa o lugar dela.
+ * alterna entre o desenho do logo (frente) e o espelhado (verso), sempre virada para o texto. A Torre não leva
+ * nada colorido atrás: o fundo é o da página.
  */
-export type TorrePlacement = { side: "left" | "right"; face: Face; hidden?: boolean; niche?: NicheTone };
+export type TorrePlacement = { side: "left" | "right"; face: Face };
 
 /** As três partes da Torre, de baixo para cima: são as três etapas do método. */
 export type TorrePart = "base" | "body" | "crown";
@@ -112,8 +87,11 @@ type BlockBase = {
   text: string;
   cta: Cta;
   torre: TorrePlacement;
-  /** a frente a que o bloco pertence: dá a cor do filete da lista */
-  accent?: AreaKey;
+  /**
+   * Uma situação do dia a dia, dita por quem procura ajuda (rascunho da IA: situação genérica, não relato de
+   * cliente, por isso sem aspas). Só nas três frentes: no lugar da antiga seção de fichas.
+   */
+  situation?: string;
 };
 
 /** Lista de itens, cada um com uma linha de explicação; `note` é um aviso curto sob a lista. */
@@ -130,10 +108,10 @@ export type ProgramsBlock = BlockBase & {
   kind: "programs";
   programs: readonly { name: string; mode: string; text: string; audience: string }[];
 };
-/** Retratos provisórios (iniciais): a Torre sai de cena e o espaço dela é dos sócios. Cargo e biografia só aparecem quando existem. */
+/** Os sócios, em texto: nome e Instagram. Cargo e biografia só aparecem quando existem (ainda não há foto). */
 export type PartnersBlock = BlockBase & {
   kind: "partners";
-  partners: readonly { name: string; initials: string; role?: string; bio?: string; instagram: { handle: string; url: string } }[];
+  partners: readonly { name: string; role?: string; bio?: string; instagram: { handle: string; url: string } }[];
 };
 export type Block = ItemsBlock | StepsBlock | ProgramsBlock | PartnersBlock;
 
@@ -146,8 +124,8 @@ export const blocks: readonly Block[] = [
     kind: "items",
     id: "financas-empresariais",
     area: "Finanças Empresariais",
-    accent: "empresa",
     title: "Clareza para decidir o futuro da sua empresa.",
+    situation: "Vendo bem, mas o caixa vive apertado.",
     text: "Organizamos os números do negócio para que cada decisão, de investir a contratar, parta do que o caixa realmente mostra.",
     items: [
       { title: "Fluxo de caixa e capital de giro", text: "Quanto entra, quanto sai e quanto precisa ficar no caixa." },
@@ -158,14 +136,14 @@ export const blocks: readonly Block[] = [
       label: "Conversar sobre a minha empresa",
       message: "Olá! Vim pelo site e quero conversar sobre as finanças da minha empresa.",
     },
-    torre: { side: "left", face: "verso", niche: "empresa" },
+    torre: { side: "left", face: "verso" },
   },
   {
     kind: "items",
     id: "financas-pessoais",
     area: "Finanças Pessoais",
-    accent: "pessoal",
     title: "Seu dinheiro organizado para a vida que você quer.",
+    situation: "O salário acaba antes do mês.",
     text: "Mostramos para onde o dinheiro vai, tiramos as dívidas do caminho e criamos uma reserva para o inesperado. O plano se adapta à sua rotina, e não o contrário.",
     items: [
       { title: "Orçamento que cabe na sua rotina", text: "Um plano de gastos simples de manter no dia a dia." },
@@ -176,7 +154,7 @@ export const blocks: readonly Block[] = [
       label: "Conversar sobre as minhas finanças",
       message: "Olá! Vim pelo site e quero conversar sobre as minhas finanças pessoais.",
     },
-    torre: { side: "right", face: "frente", niche: "pessoal" },
+    torre: { side: "right", face: "frente" },
   },
   {
     // Rascunho da IA. Antes de publicar: confirmar o registro profissional (CVM, ANCORD, CFP) da equipe. Enquanto
@@ -184,8 +162,8 @@ export const blocks: readonly Block[] = [
     kind: "items",
     id: "investimentos",
     area: "Investimentos",
-    accent: "investimentos",
     title: "Investimentos ligados ao seu objetivo.",
+    situation: "Sobra dinheiro, mas ele fica parado na conta.",
     text: "Antes de falar em produtos, entendemos o seu perfil e o que você quer conquistar. A partir daí, montamos uma estratégia e acompanhamos junto com você.",
     items: [
       { title: "Perfil e objetivos", text: "O que você quer conquistar, em quanto tempo e com quanto risco." },
@@ -197,7 +175,7 @@ export const blocks: readonly Block[] = [
       label: "Conversar sobre investimentos",
       message: "Olá! Vim pelo site e quero conversar sobre investimentos.",
     },
-    torre: { side: "left", face: "verso", niche: "investimentos" },
+    torre: { side: "left", face: "verso" },
   },
   {
     // Os três verbos são o slogan real. A leitura "a Torre é o método" (base, corpo, coroa) e as descrições são
@@ -262,7 +240,7 @@ export const blocks: readonly Block[] = [
       label: "Quero saber dos programas",
       message: "Olá! Vim pelo site e quero saber mais sobre os programas da Nexfort.",
     },
-    torre: { side: "left", face: "verso", niche: "lilac" },
+    torre: { side: "left", face: "verso" },
   },
   {
     // Nomes e perfis: públicos. Cargos, biografias e fotos entram com o material da Nexfort (campos `role` e `bio`):
@@ -275,12 +253,10 @@ export const blocks: readonly Block[] = [
     partners: [
       {
         name: "Lucas Spinola",
-        initials: "LS",
         instagram: { handle: "@lucasspinolaconsultor", url: "https://www.instagram.com/lucasspinolaconsultor/" },
       },
       {
         name: "Gabriella Valadão",
-        initials: "GV",
         instagram: { handle: "@agabriella_valadao", url: "https://www.instagram.com/agabriella_valadao/" },
       },
     ],
@@ -288,7 +264,7 @@ export const blocks: readonly Block[] = [
       label: "Falar com a equipe",
       message: "Olá! Vim pelo site e gostaria de falar com a equipe da Nexfort.",
     },
-    torre: { side: "right", face: "frente", hidden: true },
+    torre: { side: "right", face: "frente" },
   },
 ];
 

@@ -6,9 +6,9 @@ import { TorreAnchor } from "./TorreAnchor";
 
 /**
  * Assinatura: a Torre fecha a volta de frente sobre o nome, nas proporções do logo original
- * (Torre = 0,2992 da largura do nome; vão de 0,0209). Logo abaixo, o contato numa faixa âmbar: é o convite
- * final, na cor de destaque da marca, com o botão em marinho. O título (esquerda) e os dados (direita) abrem a
- * partir das bordas, em sentidos opostos.
+ * (Torre = 0,2992 da largura do nome; vão de 0,0209). Logo abaixo, o contato sobre o marinho, na mesma cor do
+ * rodapé (os dois formam um bloco só, separados por um fio): o convite final, com o botão âmbar, a única cor de
+ * destaque da tela. O título (esquerda) e os dados (direita) abrem a partir das bordas, em sentidos opostos.
  */
 export function Signature() {
   return (
@@ -23,24 +23,24 @@ export function Signature() {
         </div>
       </section>
 
-      <section id="contato" aria-labelledby="contato-titulo" className="layer on-amber bg-amber px-(--gutter) py-20 lg:py-28">
+      <section id="contato" aria-labelledby="contato-titulo" className="layer on-navy bg-navy px-(--gutter) pt-20 pb-16 text-paper lg:pt-28">
         <div className="mx-auto grid w-full max-w-(--page-max) grid-cols-1 gap-y-12 lg:grid-cols-12 lg:gap-x-8">
           <Reveal from="left" className="lg:col-span-6">
             <h2 id="contato-titulo" data-reveal-title="" className="display text-[clamp(2.75rem,5.4vw,5rem)]">
               {signature.title}
             </h2>
-            <p data-reveal-item="" className="mt-6 max-w-[40ch] text-lg leading-relaxed text-navy">
+            <p data-reveal-item="" className="mt-6 max-w-[40ch] text-lg leading-relaxed text-paper/80">
               {signature.text}
             </p>
             <div data-reveal-item="" className="mt-9">
-              <ExternalLink className="button button--navy" href={whatsappLink(signature.cta.message)}>
+              <ExternalLink className="button" href={whatsappLink(signature.cta.message)}>
                 {signature.cta.label}
               </ExternalLink>
             </div>
           </Reveal>
 
           <Reveal from="right" className="lg:col-span-5 lg:col-start-8">
-            <dl className="grid grid-cols-1 gap-x-8 gap-y-8 text-navy sm:grid-cols-2">
+            <dl className="grid grid-cols-1 gap-x-8 gap-y-8 sm:grid-cols-2">
               <div data-reveal-item="">
                 <dt className="eyebrow">Endereço</dt>
                 <dd className="mt-2 leading-relaxed">

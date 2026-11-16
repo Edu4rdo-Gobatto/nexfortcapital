@@ -6,12 +6,13 @@ import { TorreAnchor } from "./TorreAnchor";
 /**
  * Perguntas frequentes, antes da assinatura. Cada pergunta é um <details> nativo: abre com teclado, funciona
  * sem JavaScript e o leitor de tela anuncia o estado. A resposta só aparece (opacidade e um pequeno
- * deslocamento) quando a pessoa abre. Fundo lilás, opaco: a Torre segue fora de cena até a assinatura.
+ * deslocamento) quando a pessoa abre. Fundo opaco, separado dos sócios por um fio: a Torre segue fora de cena
+ * até a assinatura.
  */
 export function Faq() {
   const titleId = `${faq.id}-titulo`;
   return (
-    <section data-torre-section="" id={faq.id} aria-labelledby={titleId} className="layer bg-paper-deep px-(--gutter) py-24 lg:py-32">
+    <section data-torre-section="" id={faq.id} aria-labelledby={titleId} className="layer border-t border-line bg-paper px-(--gutter) py-24 lg:py-32">
       <TorreAnchor id={faq.id} hidden fill={0.5} className="pointer-events-none !absolute inset-0" />
       <div className="relative mx-auto grid w-full max-w-(--page-max) grid-cols-1 gap-y-12 lg:grid-cols-12 lg:gap-x-8">
         <Reveal from="left" className="lg:col-span-4">

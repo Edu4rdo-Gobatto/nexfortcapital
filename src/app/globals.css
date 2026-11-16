@@ -1,6 +1,8 @@
 @import "tailwindcss";
 
-/* ------------------------------------------------------------------ tokens (paleta 60-30-10, em OKLCH no comentário) */
+/* ------------------------------------------------------------------ tokens (cinco cores: a interface é quieta)
+   O calor (âmbar, laranja, vermelho) mora na escultura: o urso e o touro da Torre 3D. Em volta dela, só o fundo, o
+   marinho, a tinta e UMA cor de destaque, o âmbar, no botão e no filete de progresso. */
 
 @theme inline {
   --font-display: var(--font-newsreader), "Times New Roman", serif;
@@ -8,26 +10,21 @@
 }
 
 @theme {
-  /* 60%: fundo. Neutro tingido ANÁLOGO ao marinho (matiz a ~27° dele, croma ~0,005): conversa com o índigo, sem o
+  /* fundo. Neutro tingido ANÁLOGO ao marinho (matiz a ~27° dele, croma ~0,005): conversa com o índigo, sem o
      clínico do cinza puro. O porcelana antigo (#f3f1ec) era tingido para o lado do destaque, a ~178° do marinho. */
   --color-paper: #f6f5f9; /* oklch(0.972 0.005 297.7) */
-  --color-paper-deep: #ebe9f2; /* oklch(0.938 0.012 296.3): retratos provisórios */
-  /* 30%: marinho do logo, medido. A Torre, os títulos e o rodapé. */
+  --color-paper-deep: #ebe9f2; /* oklch(0.938 0.012 296.3): só o bloco do método, onde a Torre se desmonta */
+  /* marinho do logo, medido. A Torre, os títulos, o diagnóstico e o fecho (contato e rodapé). */
   --color-navy: #0c035b; /* oklch(0.224 0.140 270.9) */
-  /* 10%: o complementar da marca. O âmbar do logo está a 165° do marinho: já é o destaque. Só em botões, filetes e
-     marcadores. NUNCA como texto sobre fundo claro (1,7:1); texto marinho sobre ele tem 9,5:1. */
+  /* destaque: o complementar da marca. O âmbar do logo está a 165° do marinho. Só no botão e no filete de
+     progresso, e como rótulo sobre o marinho. NUNCA como texto sobre fundo claro (1,7:1); texto marinho sobre ele
+     tem 9,5:1. */
   --color-amber: #fbae14; /* oklch(0.805 0.166 76.2) */
   --color-amber-hover: #ffc247;
   /* texto: a tinta (matiz 285°, análoga ao marinho) e a tinta suave (7,7:1 sobre o fundo: AAA) */
   --color-ink: #14122b;
   --color-ink-soft: #4d4b63;
   --color-line: rgb(20 18 43 / 0.14);
-  /* as outras duas cores quentes do logo (o degradê do urso e do touro vai do âmbar ao vermelho) */
-  --color-orange: #e36d04;
-  --color-red: #c21e04;
-  /* fundos de seção: creme (tingido para o âmbar) e lilás (o neutro análogo ao marinho, mais fundo) */
-  --color-cream: #fdf2dc;
-  --color-lilac: #dcd8ef;
   --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1); /* curva padrão do projeto (CLAUDE.md) */
 }
 
@@ -42,33 +39,16 @@
   /* com "menos movimento": só opacidade */
   --enter-fade-duration: 500ms;
   --enter-fade-stagger: 40ms;
-  /* o degradê do logo, de cima para baixo: nicho do hero e um dos retratos */
-  --gradient-sun: linear-gradient(180deg, #fbae14 0%, #f49202 48%, #e36d04 100%);
   color-scheme: light;
 }
 
-/* ------------------------------------------------------------------ camadas e cores das frentes
-   Três camadas, de trás para a frente: os fundos e nichos das seções (sem z-index), o canvas da Torre
-   (z-index 1) e o texto (classe .layer, z-index 2). Seção com fundo opaco (sinais, diagnóstico, dúvidas,
-   contato, rodapé) leva .layer inteira: a Torre passa por trás dela. */
+/* ------------------------------------------------------------------ camadas
+   Duas camadas acima do canvas da Torre: o canvas (z-index 1) fica sobre os fundos das seções (sem z-index) e
+   abaixo do texto (classe .layer, z-index 2). Seção com fundo opaco (diagnóstico, dúvidas, contato, rodapé) leva
+   .layer inteira: a Torre passa por trás dela. */
 .layer {
   position: relative;
   z-index: 2;
-}
-
-/* Cada frente tem uma cor quente do logo, sempre a mesma: filete da lista, ponto do rótulo, etiqueta e ficha.
-   --accent-ink é a cor do texto sobre ela (contraste ≥ 5,5:1 nos três casos). */
-[data-area="empresa"] {
-  --accent: var(--color-amber);
-  --accent-ink: var(--color-navy);
-}
-[data-area="pessoal"] {
-  --accent: var(--color-orange);
-  --accent-ink: var(--color-navy);
-}
-[data-area="investimentos"] {
-  --accent: var(--color-red);
-  --accent-ink: var(--color-paper);
 }
 
 @layer base {
@@ -140,6 +120,11 @@
   .on-navy .eyebrow {
     color: var(--color-amber);
   }
+  /* o link de texto sobre o marinho: claro, com o sublinhado discreto que acende no hover */
+  .on-navy .text-link {
+    color: var(--color-paper);
+    text-decoration-color: rgb(246 245 249 / 0.35);
+  }
 
   /* navegação do cabeçalho e índice do hero: links discretos, cor mais forte só no hover */
   .nav-link,
@@ -159,7 +144,10 @@
     display: inline-block;
     min-width: 12rem;
     padding-top: 0.9rem;
-    border-top: 2px solid var(--accent, var(--color-line)); /* a cor da frente */
+    border-top: 1px solid var(--color-navy); /* o fio marinho; só o nome da frente muda de tom no hover */
+    transition:
+      color 200ms ease,
+      border-top-color 200ms ease;
   }
 
   /* Ação principal: âmbar (o destaque) com texto marinho (9,5:1), sem sombra. Hover só aqui, em elemento clicável. */
@@ -237,11 +225,8 @@
     .hero-index:hover {
       color: var(--color-navy);
     }
-    .button--navy:hover {
-      background-color: #1b1183;
-    }
-    .sign-card:hover {
-      transform: translateY(-4px);
+    .hero-index:hover {
+      border-top-color: var(--color-navy);
     }
     .footer-link:hover {
       color: var(--color-paper);
@@ -259,43 +244,6 @@
     outline: 2px solid var(--color-navy);
     outline-offset: 3px;
     border-radius: 2px;
-  }
-
-  /* Retrato provisório (Sócios): iniciais na serifa dos títulos sobre o neutro tingido. Sem foto, sem rosto falso. */
-  .portrait {
-    position: relative;
-    display: grid;
-    place-items: center;
-    aspect-ratio: 4 / 5;
-    border-radius: 2px;
-    background-color: var(--color-paper-deep);
-  }
-  .portrait__initials {
-    font-size: clamp(4rem, 8vw, 7rem);
-    line-height: 1;
-    letter-spacing: 0.02em;
-  }
-  .portrait::after {
-    content: "";
-    position: absolute;
-    inset-inline-start: 1.25rem;
-    bottom: 1.25rem;
-    width: 3rem;
-    height: 2px;
-    background-color: var(--color-amber);
-  }
-  /* enquanto não há fotos, os retratos usam as cores da marca: um em marinho, outro no degradê do logo */
-  .portrait[data-tone="navy"] {
-    background-color: var(--color-navy);
-  }
-  .portrait[data-tone="navy"] .portrait__initials {
-    color: var(--color-paper);
-  }
-  .portrait[data-tone="sun"] {
-    background: var(--gradient-sun);
-  }
-  .portrait[data-tone="sun"]::after {
-    background-color: var(--color-navy);
   }
 
   /* ---------------------------------------------------------------- método: nomes das etapas na Torre desmontada
@@ -507,109 +455,17 @@
     transform-origin: left;
   }
 
-  /* variações do botão: pequeno (cabeçalho) e marinho (sobre a faixa âmbar do contato) */
+  /* variação do botão: pequeno (cabeçalho) */
   .button--small {
     width: auto;
     min-height: 2.5rem;
     padding: 0.4rem 1.1rem;
     font-size: 0.875rem;
   }
-  .button--navy {
-    background-color: var(--color-navy);
-    color: var(--color-paper);
-  }
 
-  /* filete no topo das listas, na cor da frente do bloco (âmbar onde não há frente) */
-  .accent-rule {
-    border-top: 2px solid var(--accent, var(--color-amber));
-  }
-  .eyebrow__dot {
-    display: inline-block;
-    width: 0.6rem;
-    height: 0.6rem;
-    margin-right: 0.55rem;
-    border-radius: 50%;
-    background-color: var(--accent);
-  }
-
-  /* etiqueta: a cor da frente, ou marinho */
-  .chip {
-    display: inline-flex;
-    align-items: center;
-    align-self: flex-start;
-    height: 1.75rem;
-    padding-inline: 0.75rem;
-    border-radius: 999px;
-    background-color: var(--accent, var(--color-amber));
-    color: var(--accent-ink, var(--color-navy));
-    font-family: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
-    font-size: 0.8125rem;
-    font-weight: 600;
-    letter-spacing: 0;
-    line-height: 1;
-  }
-  .chip--navy {
-    background-color: var(--color-navy);
-    color: var(--color-paper);
-  }
-
-  /* sobre a faixa âmbar (contato): tudo em marinho */
-  .on-amber .eyebrow {
-    color: var(--color-navy);
-  }
-  .on-amber .text-link {
-    text-decoration-color: rgb(12 3 91 / 0.4);
-  }
-
-  /* ---------------------------------------------------------------- faixa do slogan (depois do hero)
-     Âmbar de ponta a ponta, com os três verbos em letras grandes. O deslize lateral vem da rolagem (WordBand). */
-  .word-band {
-    position: relative;
-    overflow: hidden;
-    padding-block: clamp(1.25rem, 2.6vw, 2.5rem);
-    background-color: var(--color-amber);
-  }
-  .word-band__track {
-    display: flex;
-    width: max-content;
-  }
-  .word-band__word {
-    display: inline-flex;
-    align-items: center;
-    font-family: var(--font-newsreader), "Times New Roman", serif;
-    font-size: clamp(3.5rem, 9vw, 9rem);
-    letter-spacing: -0.03em;
-    line-height: 1.05;
-    white-space: nowrap;
-    color: var(--color-navy);
-  }
-  .word-band__mark {
-    display: inline-block;
-    width: 0.2em;
-    height: 0.2em;
-    margin-inline: 0.4em;
-    background-color: var(--color-red);
-    transform: rotate(45deg);
-  }
-
-  /* ---------------------------------------------------------------- fichas "Alguma destas frases é sua?"
-     Ficha branca sobre o creme, com a borda de cima na cor da frente. É um link: sobe um pouco no hover. */
-  .sign-card {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    gap: 1.75rem;
-    min-height: 11.5rem;
-    padding: 1.5rem;
-    border-top: 4px solid var(--accent);
-    border-radius: 3px;
-    background-color: #fff;
-    transition: transform 240ms var(--ease-out-quint);
-  }
-  .sign-card__text {
-    font-size: clamp(1.375rem, 1.7vw, 1.625rem);
-    line-height: 1.2;
-    letter-spacing: -0.012em;
+  /* filete marinho no topo das listas dos blocos (a mesma régua das dúvidas) */
+  .list-rule {
+    border-top: 2px solid var(--color-navy);
   }
 
   /* ---------------------------------------------------------------- dúvidas (<details> nativo)
@@ -721,7 +577,7 @@
   left: 0;
   width: 100%;
   height: var(--stage-h, 100lvh); /* a altura da tela medida pelo palco (TorreStage) */
-  z-index: 1; /* acima dos fundos e nichos das seções, abaixo do texto (.layer) */
+  z-index: 1; /* acima dos fundos das seções, abaixo do texto (.layer) */
   pointer-events: none;
 }
 /* Presa a uma âncora: o canvas deixa de ser fixo, fica sobre a âncora (o palco define o translate) e rola com a
@@ -730,35 +586,11 @@
   position: absolute;
 }
 
-/* A âncora é um contêiner de tamanho: o nicho e os nomes das etapas se medem pela altura dela (1cqh = 1%). */
+/* A âncora é um contêiner de tamanho: os nomes das etapas se medem pela altura dela (1cqh = 1%). */
 [data-torre-anchor] {
   container-type: size;
 }
 
-/* Nicho: um arco colorido atrás da Torre. Ela fica na frente dele e a base passa um pouco da borda de baixo,
-   como uma peça diante de um painel. A cor vem da frente do bloco. */
-.torre-niche {
-  position: absolute;
-  top: -4cqh;
-  bottom: 9cqh;
-  left: 50%;
-  width: min(74cqh, 100cqw);
-  border-radius: 999px 999px 0 0;
-  background: var(--color-lilac);
-  transform: translateX(-50%);
-}
-.torre-niche[data-tone="sun"] {
-  background: var(--gradient-sun);
-}
-.torre-niche[data-tone="empresa"] {
-  background: #fde2a3;
-}
-.torre-niche[data-tone="pessoal"] {
-  background: #fbcfa8;
-}
-.torre-niche[data-tone="investimentos"] {
-  background: #f5bfb1;
-}
 .torre-stage__inner {
   position: absolute;
   inset: 0;
@@ -881,8 +713,5 @@
   }
   .faq__answer {
     animation-name: fade;
-  }
-  .sign-card {
-    transition: none;
   }
 }

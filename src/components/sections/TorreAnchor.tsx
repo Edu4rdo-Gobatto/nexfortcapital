@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { Emblem } from "@/components/brand/Brand";
 import type { Face, Facing } from "@/components/torre/choreography";
-import type { NicheTone } from "@/content/nexfort";
 import { cn } from "@/lib/cn";
 
 type TorreAnchorProps = {
@@ -11,12 +10,10 @@ type TorreAnchorProps = {
   face?: Face;
   /** o lado em que está o texto: a face fica virada para ele (22°). "centro": de frente, como o logo. Sem valor: esquerda */
   facing?: Facing;
-  /** a Torre sai de cena nesta âncora (sinais, diagnóstico, Sócios, dúvidas) e volta na seguinte */
+  /** a Torre sai de cena nesta âncora (diagnóstico, dúvidas) e volta na seguinte */
   hidden?: boolean;
   /** a Torre se desmonta aqui nas três partes do método (base, corpo, coroa) */
   explode?: boolean;
-  /** nicho colorido atrás da Torre (um arco): a cor da frente do bloco, o degradê do logo ("sun") ou o lilás neutro */
-  niche?: NicheTone;
   /** fração da altura da âncora ocupada pela Torre */
   fill?: number;
   /** elevação da vista, em graus (0 = vista do logo) */
@@ -32,10 +29,10 @@ type TorreAnchorProps = {
  * JavaScript, o emblema 2D do logo aparece aqui no lugar dela (menos na âncora de "fora de cena").
  * Os padrões (frente, esquerda) ficam em choreography.ts, que lê os atributos data-torre-*.
  *
- * Camadas: a âncora fica ABAIXO do canvas da Torre (o texto fica acima, na classe `layer`). Por isso o nicho
- * colorido pode morar aqui dentro: a Torre 3D é desenhada na frente dele.
+ * Camadas: a âncora fica ABAIXO do canvas da Torre (o texto fica acima, na classe `layer`). Nada fica atrás da
+ * Torre: ela é desenhada direto sobre o fundo da página.
  */
-export function TorreAnchor({ id, className, face, facing, hidden, explode, niche, fill, elev, shadow, children }: TorreAnchorProps) {
+export function TorreAnchor({ id, className, face, facing, hidden, explode, fill, elev, shadow, children }: TorreAnchorProps) {
   return (
     <div
       data-torre-anchor={id}
@@ -49,7 +46,6 @@ export function TorreAnchor({ id, className, face, facing, hidden, explode, nich
       aria-hidden="true"
       className={cn("relative", className)}
     >
-      {niche ? <span className="torre-niche" data-tone={niche} /> : null}
       {hidden ? null : <Emblem className="torre-fallback absolute inset-0 m-auto h-full w-auto" />}
       {children}
     </div>

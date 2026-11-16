@@ -43,11 +43,11 @@ async function CopyrightYear() {
   return <>{new Date().getFullYear()}</>;
 }
 
-/** Rodapé marinho, com o que um rodapé de verdade tem: quem é, as frentes, as seções, o contato e os avisos. */
+/** Rodapé marinho, sem emenda com o contato (um fio os separa), com o que um rodapé de verdade tem: quem é, as frentes, as seções, o contato e os avisos. */
 export function Footer() {
   return (
-    <footer className="layer on-navy bg-navy px-(--gutter) pt-16 pb-10 text-paper">
-      <div className="mx-auto grid w-full max-w-(--page-max) grid-cols-2 gap-x-8 gap-y-12 lg:grid-cols-12">
+    <footer className="layer on-navy bg-navy px-(--gutter) pb-10 text-paper">
+      <div className="mx-auto grid w-full max-w-(--page-max) grid-cols-2 gap-x-8 gap-y-12 border-t border-paper/15 pt-14 lg:grid-cols-12">
         <div className="col-span-2 lg:col-span-4">
           <Wordmark className="h-4 w-auto" title={company.name} />
           <p className="mt-5 max-w-[34ch] text-paper/75">{footer.about}</p>
